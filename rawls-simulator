@@ -1,0 +1,607 @@
+import React, { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { AlertCircle, ArrowRight, HeartPulse, GraduationCap, Briefcase, Sparkles, Shield, Coins } from "lucide-react";
+
+const clamp = (n, min = 0, max = 100) => Math.max(min, Math.min(max, n));
+const pickWeighted = (items) => {
+  const total = items.reduce((sum, i) => sum + i.weight, 0);
+  let r = Math.random() * total;
+  for (const item of items) {
+    r -= item.weight;
+    if (r <= 0) return item.value;
+  }
+  return items[items.length - 1].value;
+};
+
+const policyOptions = {
+  taxRate: ["Low", "Medium", "High"],
+  education: ["Private", "Mixed", "Universal"],
+  healthcare: ["Private", "Hybrid", "Public"],
+  welfare: ["Low", "Moderate", "Strong"],
+  marketFreedom: ["High", "Balanced", "Regulated"],
+};
+
+const stageOrder = [
+  "intro",
+  "design",
+  "veil",
+  "spawn",
+  "childhood",
+  "youngAdult",
+  "career",
+  "shock",
+  "ending",
+  "reflection",
+];
+
+function computeWorld(policy) {
+  const inequality =
+    (policy.taxRate === 0 ? 18 : policy.taxRate === 1 ? 10 : 3) +
+    (policy.education === 0 ? 10 : policy.education === 1 ? 5 : 0) +
+    (policy.welfare === 0 ? 10 : policy.welfare === 1 ? 4 : 0) +
+    (policy.marketFreedom === 0 ? 8 : policy.marketFreedom === 1 ? 4 : 1) +
+    (policy.healthcare === 0 ? 5 : policy.healthcare === 1 ? 2 : 0);
+
+  const mobility =
+    (policy.education === 2 ? 28 : policy.education === 1 ? 18 : 8) +
+    (policy.welfare === 2 ? 16 : policy.welfare === 1 ? 10 : 3) +
+    (policy.taxRate === 2 ? 12 : policy.taxRate === 1 ? 8 : 2) +
+    (policy.healthcare === 2 ? 10 : policy.healthcare === 1 ? 6 : 2);
+
+  const safetyNet =
+    (policy.welfare === 2 ? 30 : policy.welfare === 1 ? 18 : 6) +
+    (policy.healthcare === 2 ? 24 : policy.healthcare === 1 ? 14 : 4) +
+    (policy.taxRate === 2 ? 10 : policy.taxRate === 1 ? 6 : 2);
+
+  const growth =
+    (policy.marketFreedom === 0 ? 24 : policy.marketFreedom === 1 ? 16 : 10) +
+    (policy.taxRate === 0 ? 12 : policy.taxRate === 1 ? 8 : 4);
+
+  return {
+    inequality: clamp(inequality),
+    mobility: clamp(mobility),
+    safetyNet: clamp(safetyNet),
+    growth: clamp(growth),
+  };
+}
+
+function generateLife(world) {
+  const startingClass = pickWeighted([
+    { value: "Top 10%", weight: Math.max(8, 20 - world.inequality / 2) },
+    { value: "Middle 40%", weight: Math.max(15, 45 - world.inequality / 3) },
+    { value: "Bottom 50%", weight: 35 + world.inequality / 1.5 },
+  ]);
+
+  const countryType = pickWeighted([
+    { value: "Developed country", weight: 55 },
+    { value: "Developing country", weight: 45 },
+  ]);
+
+  const educationAccess = pickWeighted([
+    { value: "High", weight: world.mobility + (startingClass === "Top 10%" ? 15 : 0) },
+    { value: "Medium", weight: 35 },
+    { value: "Low", weight: 80 - world.mobility + (startingClass === "Bottom 50%" ? 18 : 0) },
+  ]);
+
+  let wealth = startingClass === "Top 10%" ? 72 : startingClass === "Middle 40%" ? 46 : 24;
+  let health = countryType === "Developed country" ? 65 : 52;
+  let educationLevel = educationAccess === "High" ? 58 : educationAccess === "Medium" ? 38 : 20;
+
+  return {
+    startingClass,
+    countryType,
+    educationAccess,
+    wealth,
+    health,
+    educationLevel,
+  };
+}
+
+function scoreStats(stats) {
+  return Math.round(stats.wealth * 0.4 + stats.health * 0.3 + stats.educationLevel * 0.3);
+}
+
+const fade = {
+  initial: { opacity: 0, y: 18 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -18 },
+  transition: { duration: 0.35 },
+};
+
+function ChoiceCard({ title, description, effects, onClick }) {
+  return (
+    <button onClick={onClick} className="text-left w-full">
+      <Card className="rounded-2xl border hover:shadow-lg transition-all h-full">
+        <CardHeader>
+          <CardTitle className="text-lg">{title}</CardTitle>
+          <CardDescription className="text-sm leading-6">{description}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {effects.map((e, i) => (
+              <Badge key={i} variant="secondary" className="rounded-full">{e}</Badge>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </button>
+  );
+}
+
+export default function VeilOfIgnoranceGame() {
+  const [step, setStep] = useState("intro");
+  const [policy, setPolicy] = useState({
+    taxRate: 1,
+    education: 1,
+    healthcare: 1,
+    welfare: 1,
+    marketFreedom: 1,
+  });
+  const world = useMemo(() => computeWorld(policy), [policy]);
+  const [life, setLife] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [log, setLog] = useState([]);
+  const [accepted, setAccepted] = useState(null);
+
+  const progress = ((Math.max(0, stageOrder.indexOf(step))) / (stageOrder.length - 1)) * 100;
+
+  const startLife = () => {
+    const generated = generateLife(world);
+    setLife(generated);
+    setStats({
+      wealth: generated.wealth,
+      health: generated.health,
+      educationLevel: generated.educationLevel,
+    });
+    setLog([]);
+    setStep("spawn");
+  };
+
+  const applyOutcome = (title, deltas, nextStep, note) => {
+    setStats((prev) => {
+      const next = {
+        wealth: clamp(prev.wealth + (deltas.wealth || 0)),
+        health: clamp(prev.health + (deltas.health || 0)),
+        educationLevel: clamp(prev.educationLevel + (deltas.educationLevel || 0)),
+      };
+      return next;
+    });
+    setLog((prev) => [...prev, { title, note }]);
+    setStep(nextStep);
+  };
+
+  const endingScore = stats ? scoreStats(stats) : 0;
+  const didSucceed = endingScore >= 65;
+
+  const StatPill = ({ icon: Icon, label, value }) => (
+    <div className="rounded-2xl border p-4 bg-white shadow-sm">
+      <div className="flex items-center gap-2 text-sm text-slate-500">
+        <Icon className="h-4 w-4" /> {label}
+      </div>
+      <div className="mt-2 text-2xl font-semibold">{value}</div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 p-4 md:p-8">
+      <div className="max-w-5xl mx-auto">
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <div>
+            <div className="text-sm uppercase tracking-[0.2em] text-slate-500">Public Philosophy Game</div>
+            <h1 className="text-3xl md:text-5xl font-semibold tracking-tight">Design a Society. Then Live in It.</h1>
+          </div>
+          <Badge className="rounded-full px-4 py-2 text-sm">Rawls Simulator</Badge>
+        </div>
+
+        <Progress value={progress} className="h-2 rounded-full mb-8" />
+
+        <AnimatePresence mode="wait">
+          {step === "intro" && (
+            <motion.div key="intro" {...fade}>
+              <Card className="rounded-3xl border-0 shadow-xl">
+                <CardContent className="p-8 md:p-10">
+                  <div className="grid md:grid-cols-2 gap-8 items-center">
+                    <div>
+                      <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-sm mb-4">
+                        <Sparkles className="h-4 w-4" /> An interactive moral simulation
+                      </div>
+                      <h2 className="text-2xl md:text-4xl font-semibold leading-tight">You are about to build a society.</h2>
+                      <p className="mt-4 text-lg text-slate-600 leading-8">
+                        Set the rules you believe are fair. Then enter the world you created and find out whether you can build a stable life inside it.
+                      </p>
+                      <div className="mt-6 flex gap-3">
+                        <Button size="lg" className="rounded-2xl" onClick={() => setStep("design")}>Begin <ArrowRight className="ml-2 h-4 w-4" /></Button>
+                      </div>
+                    </div>
+                    <Card className="rounded-3xl border bg-slate-50 shadow-none">
+                      <CardContent className="p-6 space-y-4">
+                        <div className="text-sm text-slate-500">You will choose policies for:</div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <StatPill icon={Coins} label="Taxation" value="Policy" />
+                          <StatPill icon={GraduationCap} label="Education" value="Policy" />
+                          <StatPill icon={HeartPulse} label="Healthcare" value="Policy" />
+                          <StatPill icon={Shield} label="Welfare" value="Policy" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {step === "design" && (
+            <motion.div key="design" {...fade}>
+              <Card className="rounded-3xl shadow-xl border-0">
+                <CardHeader className="p-8 pb-4">
+                  <CardTitle className="text-2xl md:text-3xl">Design your society</CardTitle>
+                  <CardDescription className="text-base leading-7">
+                    Adjust each rule according to what you think makes a society good. Your choices will shape inequality, opportunity, and security.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 pt-2 grid gap-8">
+                  {[
+                    ["taxRate", "Tax rate", "How much the state collects to fund public goods."],
+                    ["education", "Education system", "How accessible quality schooling is across society."],
+                    ["healthcare", "Healthcare system", "Who bears the burden when people get sick."],
+                    ["welfare", "Welfare system", "How much support exists when people fall behind."],
+                    ["marketFreedom", "Market structure", "How much room there is for upside, risk, and volatility."],
+                  ].map(([key, label, desc]) => (
+                    <div key={key}>
+                      <div className="flex items-end justify-between gap-3">
+                        <div>
+                          <div className="text-lg font-medium">{label}</div>
+                          <div className="text-sm text-slate-500">{desc}</div>
+                        </div>
+                        <Badge variant="secondary" className="rounded-full">{policyOptions[key][policy[key]]}</Badge>
+                      </div>
+                      <Slider
+                        className="mt-4"
+                        min={0}
+                        max={2}
+                        step={1}
+                        value={[policy[key]]}
+                        onValueChange={(v) => setPolicy((p) => ({ ...p, [key]: v[0] }))}
+                      />
+                      <div className="mt-2 flex justify-between text-xs text-slate-400">
+                        {policyOptions[key].map((o) => <span key={o}>{o}</span>)}
+                      </div>
+                    </div>
+                  ))}
+
+                  <Separator />
+
+                  <div className="grid md:grid-cols-4 gap-3">
+                    <StatPill icon={AlertCircle} label="Inequality" value={world.inequality} />
+                    <StatPill icon={GraduationCap} label="Mobility" value={world.mobility} />
+                    <StatPill icon={Shield} label="Safety Net" value={world.safetyNet} />
+                    <StatPill icon={Briefcase} label="Growth" value={world.growth} />
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Button size="lg" className="rounded-2xl" onClick={() => setStep("veil")}>Continue</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {step === "veil" && (
+            <motion.div key="veil" {...fade}>
+              <Card className="rounded-3xl shadow-xl border-0 bg-slate-900 text-white">
+                <CardContent className="p-10 md:p-16 text-center">
+                  <div className="text-sm uppercase tracking-[0.3em] text-slate-400 mb-4">The Veil of Ignorance</div>
+                  <h2 className="text-3xl md:text-5xl font-semibold leading-tight">You will now enter the society you created.</h2>
+                  <p className="mt-6 text-lg md:text-xl text-slate-300 max-w-2xl mx-auto leading-8">
+                    You will not choose who you are. You will not choose your family, country, or starting class.
+                  </p>
+                  <Button size="lg" variant="secondary" className="rounded-2xl mt-8" onClick={startLife}>Enter Society</Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {step === "spawn" && life && stats && (
+            <motion.div key="spawn" {...fade}>
+              <Card className="rounded-3xl shadow-xl border-0">
+                <CardHeader className="p-8 pb-4">
+                  <CardTitle className="text-2xl md:text-3xl">You have been born.</CardTitle>
+                  <CardDescription className="text-base leading-7">
+                    You begin life in the <strong>{life.startingClass}</strong>, in a <strong>{life.countryType.toLowerCase()}</strong>, with <strong>{life.educationAccess.toLowerCase()}</strong> access to education.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 pt-2 grid gap-6">
+                  <div className="grid md:grid-cols-3 gap-3">
+                    <StatPill icon={Coins} label="Wealth" value={stats.wealth} />
+                    <StatPill icon={HeartPulse} label="Health" value={stats.health} />
+                    <StatPill icon={GraduationCap} label="Education" value={stats.educationLevel} />
+                  </div>
+
+                  <Card className="rounded-2xl bg-slate-50 border shadow-none">
+                    <CardContent className="p-6">
+                      <div className="text-lg font-medium">Your objective</div>
+                      <p className="text-slate-600 mt-2 leading-7">
+                        Reach a stable life by adulthood. Stability depends on your wealth, health, and education. The choices you make will matter, but so will the structure of the world around you.
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <div className="flex justify-end">
+                    <Button size="lg" className="rounded-2xl" onClick={() => setStep("childhood")}>Start Life</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {step === "childhood" && stats && (
+            <motion.div key="childhood" {...fade}>
+              <Card className="rounded-3xl shadow-xl border-0">
+                <CardHeader className="p-8 pb-4">
+                  <CardTitle className="text-2xl md:text-3xl">Stage 1 — Childhood</CardTitle>
+                  <CardDescription className="text-base leading-7">
+                    Your family is under pressure. You are old enough to help bring in income, but staying in school might change your future.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 pt-2 grid md:grid-cols-2 gap-4">
+                  <ChoiceCard
+                    title="Work to support your household"
+                    description="You start earning early and help keep the family afloat, but you lose time that could have gone to school."
+                    effects={["+ short-term wealth", "- education"]}
+                    onClick={() => applyOutcome(
+                      "Childhood: Worked early",
+                      { wealth: 10 + Math.round(world.safetyNet / 12), educationLevel: -10 },
+                      "youngAdult",
+                      "You helped your household survive, but your education slowed."
+                    )}
+                  />
+                  <ChoiceCard
+                    title="Stay in school"
+                    description="You remain focused on education. This is easier if the state offers support and harder if your family has no cushion."
+                    effects={["+ education", world.safetyNet > 40 ? "+ supported by safety net" : "- family finances strained"]}
+                    onClick={() => applyOutcome(
+                      "Childhood: Stayed in school",
+                      { wealth: world.safetyNet > 40 ? -2 : -8, educationLevel: 14 + Math.round(world.mobility / 10) },
+                      "youngAdult",
+                      "You invested in your future instead of immediate income."
+                    )}
+                  />
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {step === "youngAdult" && stats && (
+            <motion.div key="youngAdult" {...fade}>
+              <Card className="rounded-3xl shadow-xl border-0">
+                <CardHeader className="p-8 pb-4">
+                  <CardTitle className="text-2xl md:text-3xl">Stage 2 — Early Adulthood</CardTitle>
+                  <CardDescription className="text-base leading-7">
+                    A difficult choice appears: borrow to pursue higher education, or start working immediately and avoid debt.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 pt-2 grid md:grid-cols-2 gap-4">
+                  <ChoiceCard
+                    title="Take a loan for higher education"
+                    description="This could dramatically increase your opportunities. It could also trap you if your society offers weak mobility."
+                    effects={["+ education", world.mobility > 45 ? "+ real upward mobility" : "+ debt risk"]}
+                    onClick={() => applyOutcome(
+                      "Young adulthood: Took education loan",
+                      {
+                        wealth: world.mobility > 45 ? -4 : -12,
+                        educationLevel: 18 + Math.round(world.mobility / 8),
+                        health: -2,
+                      },
+                      "career",
+                      "You bet on long-term opportunity."
+                    )}
+                  />
+                  <ChoiceCard
+                    title="Start working immediately"
+                    description="You earn now and avoid debt, but your ceiling may be lower later."
+                    effects={["+ wealth", "- long-term upside"]}
+                    onClick={() => applyOutcome(
+                      "Young adulthood: Entered workforce early",
+                      { wealth: 14, educationLevel: -4 },
+                      "career",
+                      "You chose security now over educational risk."
+                    )}
+                  />
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {step === "career" && stats && (
+            <motion.div key="career" {...fade}>
+              <Card className="rounded-3xl shadow-xl border-0">
+                <CardHeader className="p-8 pb-4">
+                  <CardTitle className="text-2xl md:text-3xl">Stage 3 — Career</CardTitle>
+                  <CardDescription className="text-base leading-7">
+                    You now have enough footing to choose between stability and risk.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 pt-2 grid md:grid-cols-2 gap-4">
+                  <ChoiceCard
+                    title="Take the stable job"
+                    description="Reliable income, modest growth, fewer chances to break out."
+                    effects={["+ steady wealth", "+ health", "- upside"]}
+                    onClick={() => applyOutcome(
+                      "Career: Chose stable job",
+                      { wealth: 12, health: 6, educationLevel: 0 },
+                      "shock",
+                      "You traded upside for steadiness."
+                    )}
+                  />
+                  <ChoiceCard
+                    title="Start a risky business"
+                    description="The market can reward ambition, but volatility hits harder when safety nets are weak."
+                    effects={[world.growth > 25 ? "+ high upside" : "± uncertain upside", world.safetyNet < 35 ? "- fragile if it fails" : "+ fall protection"]}
+                    onClick={() => {
+                      const success = Math.random() < (0.28 + world.growth / 100 - world.inequality / 220);
+                      applyOutcome(
+                        "Career: Started risky business",
+                        success
+                          ? { wealth: 22 + Math.round(world.growth / 6), health: -3 }
+                          : { wealth: world.safetyNet > 40 ? -4 : -16, health: -6 },
+                        "shock",
+                        success ? "Your risk paid off." : "The business struggled under pressure."
+                      );
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {step === "shock" && stats && (
+            <motion.div key="shock" {...fade}>
+              <Card className="rounded-3xl shadow-xl border-0">
+                <CardHeader className="p-8 pb-4">
+                  <CardTitle className="text-2xl md:text-3xl">Stage 4 — Shock Event</CardTitle>
+                  <CardDescription className="text-base leading-7">
+                    Life does not wait for ideal circumstances. A major disruption hits.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 pt-2 grid md:grid-cols-2 gap-4">
+                  <ChoiceCard
+                    title="A serious illness enters your life"
+                    description="Whether this becomes a setback or a catastrophe depends heavily on your healthcare system."
+                    effects={[world.safetyNet > 40 ? "+ system absorbs some damage" : "- out-of-pocket burden", "- health"]}
+                    onClick={() => applyOutcome(
+                      "Shock: Illness",
+                      {
+                        health: world.safetyNet > 40 ? -10 : -18,
+                        wealth: policy.healthcare === 2 ? -2 : policy.healthcare === 1 ? -8 : -16,
+                      },
+                      "ending",
+                      "Your world revealed what happens when people become vulnerable."
+                    )}
+                  />
+                  <ChoiceCard
+                    title="You lose your job in a downturn"
+                    description="The question becomes whether your society gives you time to recover or lets one setback spiral."
+                    effects={[world.safetyNet > 40 ? "+ unemployment cushion" : "- immediate insecurity", "- wealth"]}
+                    onClick={() => applyOutcome(
+                      "Shock: Job loss",
+                      {
+                        wealth: world.safetyNet > 40 ? -8 : -18,
+                        health: world.safetyNet > 40 ? -3 : -9,
+                      },
+                      "ending",
+                      "Your safety net determined how hard the fall felt."
+                    )}
+                  />
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {step === "ending" && stats && (
+            <motion.div key="ending" {...fade}>
+              <Card className="rounded-3xl shadow-xl border-0">
+                <CardHeader className="p-8 pb-4">
+                  <CardTitle className="text-2xl md:text-3xl">Final Outcome</CardTitle>
+                  <CardDescription className="text-base leading-7">
+                    By adulthood, your life has been shaped by both your choices and the institutions around you.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 pt-2 space-y-6">
+                  <div className="grid md:grid-cols-4 gap-3">
+                    <StatPill icon={Coins} label="Wealth" value={stats.wealth} />
+                    <StatPill icon={HeartPulse} label="Health" value={stats.health} />
+                    <StatPill icon={GraduationCap} label="Education" value={stats.educationLevel} />
+                    <StatPill icon={Shield} label="Stability" value={endingScore} />
+                  </div>
+
+                  <Card className={`rounded-2xl border ${didSucceed ? "bg-emerald-50" : "bg-rose-50"}`}>
+                    <CardContent className="p-6">
+                      <div className="text-xl font-semibold">{didSucceed ? "You reached a stable life." : "You did not reach stability."}</div>
+                      <p className="text-slate-600 mt-2 leading-7">
+                        {didSucceed
+                          ? "You built enough wealth, health, and opportunity to achieve relative security."
+                          : "Despite your efforts, the path available to you was not enough to produce lasting stability."}
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  {log.length > 0 && (
+                    <Card className="rounded-2xl bg-slate-50 border shadow-none">
+                      <CardContent className="p-6 space-y-3">
+                        <div className="font-medium">What happened along the way</div>
+                        {log.map((item, i) => (
+                          <div key={i} className="text-sm text-slate-600 leading-6">
+                            <span className="font-medium text-slate-800">{item.title}:</span> {item.note}
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  <div className="flex justify-end">
+                    <Button size="lg" className="rounded-2xl" onClick={() => setStep("reflection")}>Reflect</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {step === "reflection" && (
+            <motion.div key="reflection" {...fade}>
+              <Card className="rounded-3xl shadow-xl border-0">
+                <CardHeader className="p-8 pb-4">
+                  <CardTitle className="text-2xl md:text-3xl">Would you accept this society?</CardTitle>
+                  <CardDescription className="text-base leading-7">
+                    If you had to choose these rules without knowing where you would begin, would you still endorse the world you created?
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 pt-2 space-y-6">
+                  {!accepted ? (
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <Button variant="outline" className="h-20 rounded-2xl text-lg" onClick={() => setAccepted("yes")}>Yes, I would accept it</Button>
+                      <Button className="h-20 rounded-2xl text-lg" onClick={() => setAccepted("no")}>No, I would not</Button>
+                    </div>
+                  ) : (
+                    <Card className="rounded-2xl bg-slate-50 border shadow-none">
+                      <CardContent className="p-6 space-y-4">
+                        <div className="text-lg font-medium">Philosophical takeaway</div>
+                        <p className="text-slate-700 leading-7">
+                          John Rawls argued that a just society should be designed as if no one knew in advance what position they would occupy inside it. This is the <em>veil of ignorance</em>. The test is not whether a system benefits the lucky, but whether rational people would accept its rules before knowing whether they would be privileged or vulnerable.
+                        </p>
+                        <p className="text-slate-700 leading-7">
+                          You answered: <strong>{accepted === "yes" ? "Yes" : "No"}</strong>. That answer is the heart of the project. It reveals whether your institutions feel fair only from the top, or whether they remain defensible from anywhere.
+                        </p>
+                        <div className="flex flex-wrap gap-3 pt-2">
+                          <Button className="rounded-2xl" onClick={() => {
+                            setAccepted(null);
+                            setLife(null);
+                            setStats(null);
+                            setLog([]);
+                            setStep("design");
+                          }}>Play Again</Button>
+                          <Button variant="outline" className="rounded-2xl" onClick={() => {
+                            setAccepted(null);
+                            setStep("intro");
+                            setLife(null);
+                            setStats(null);
+                            setLog([]);
+                          }}>Restart</Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
