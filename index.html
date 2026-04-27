@@ -1,44 +1,1944 @@
-<!doctype html>
+index.html
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rawls Simulator Test</title>
+  <title>Veil of Ignorance RPG</title>
   <style>
-    body {
+    :root {
+      --bg: #08111f;
+      --panel: rgba(13, 24, 43, 0.94);
+      --panel-2: rgba(19, 35, 63, 0.94);
+      --line: rgba(133, 164, 255, 0.18);
+      --text: #f2f7ff;
+      --muted: #9fb5df;
+      --accent: #88a9ff;
+      --accent-2: #68f0c1;
+      --danger: #ff7a9f;
+      --gold: #ffd76a;
+      --shadow: 0 22px 60px rgba(0, 0, 0, 0.35);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0b1220;
-      color: white;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(115, 139, 255, 0.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(45, 211, 191, 0.14), transparent 24%),
+        linear-gradient(180deg, #09111f 0%, #0b1323 46%, #071019 100%);
+      color: var(--text);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 22px 22px;
+      pointer-events: none;
+      opacity: 0.35;
+    }
+
+    #app {
+      width: 100%;
+      height: 100%;
+      padding: 14px;
+    }
+
+    .shell {
+      width: 100%;
+      height: calc(100vh - 28px);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: rgba(7, 14, 27, 0.72);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .shell::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), transparent 20%, transparent 80%, rgba(255,255,255,0.03));
+      pointer-events: none;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      padding: 18px;
       display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .glass {
+      background: linear-gradient(180deg, rgba(17, 31, 56, 0.94), rgba(11, 20, 38, 0.94));
+    }
+
+    .title-screen {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 14px;
+      height: 100%;
+    }
+
+    .hero-panel {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .hero-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 18% 24%, rgba(114, 141, 255, 0.22), transparent 30%),
+        radial-gradient(circle at 80% 20%, rgba(64, 238, 196, 0.16), transparent 24%),
+        linear-gradient(180deg, rgba(255,255,255,0.03), transparent 40%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(136, 169, 255, 0.12);
+      color: #d6e2ff;
+      border: 1px solid rgba(136, 169, 255, 0.18);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      width: fit-content;
+    }
+
+    h1, h2, h3, h4, p { margin: 0; }
+
+    h1 {
+      font-size: clamp(34px, 4vw, 58px);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      max-width: 10ch;
+    }
+
+    .lead {
+      color: #dce7ff;
+      font-size: 18px;
+      line-height: 1.45;
+      max-width: 55ch;
+    }
+
+    .muted { color: var(--muted); }
+
+    .title-bottom {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .mini-card {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(11, 20, 37, 0.72);
+    }
+
+    .title-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+      position: relative;
+      z-index: 1;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      color: var(--text);
+      transition: transform 0.15s ease, opacity 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+      font: inherit;
+    }
+
+    .btn {
+      min-height: 46px;
+      padding: 12px 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      gap: 10px;
+      font-weight: 700;
     }
-    .box {
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, rgba(136,169,255,0.96), rgba(96,227,201,0.82));
+      color: #07111d;
+      border: none;
+    }
+
+    .btn-secondary {
+      background: rgba(136, 169, 255, 0.14);
+      color: #dce7ff;
+      border: 1px solid rgba(136, 169, 255, 0.26);
+    }
+
+    .preview-panel {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .pill-row, .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill, .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 11px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.06);
+      font-size: 12px;
+      color: #d3e1ff;
+    }
+
+    .title-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .score-box {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(9, 18, 34, 0.85);
+      border: 1px solid var(--line);
+    }
+
+    .big-score {
+      font-size: 42px;
+      letter-spacing: -0.05em;
+      margin-top: 6px;
+      font-weight: 800;
+    }
+
+    .builder-layout {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 14px;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .builder-left {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .builder-header {
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .builder-header h2 { font-size: 30px; letter-spacing: -0.03em; }
+
+    .subtle-note {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.45;
+      max-width: 46ch;
+    }
+
+    .world-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      overflow: auto;
+      padding-right: 4px;
+      min-height: 0;
+    }
+
+    .config-card {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 132px;
+    }
+
+    .config-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .config-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .config-value {
+      font-size: 12px;
+      color: #d4e2ff;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(136, 169, 255, 0.16);
+      border: 1px solid rgba(136, 169, 255, 0.22);
+    }
+
+    .option-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .toggle {
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #dce7ff;
+      font-size: 12px;
+      min-height: 38px;
+    }
+
+    .toggle.active {
+      background: rgba(136, 169, 255, 0.2);
+      border-color: rgba(136, 169, 255, 0.45);
+      color: white;
+      box-shadow: 0 0 0 1px rgba(136, 169, 255, 0.12) inset;
+    }
+
+    .config-desc {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.42;
+    }
+
+    .builder-right {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .preview-stack {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .bar-block { display: flex; flex-direction: column; gap: 8px; }
+
+    .bar-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #dbe6ff;
+    }
+
+    .bar-shell {
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(136,169,255,0.9), rgba(104,240,193,0.95));
+      width: 0%;
+      transition: width 360ms ease;
+    }
+
+    .map-card {
+      padding: 14px;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .map {
+      position: relative;
+      flex: 1;
+      min-height: 248px;
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      background:
+        linear-gradient(180deg, #3b6be8 0%, #7ccfff 27%, #8fe2b9 27%, #7bc56a 54%, #4a814c 54%, #2d4e3a 100%);
+      box-shadow: inset 0 20px 40px rgba(255,255,255,0.08), inset 0 -18px 22px rgba(0,0,0,0.18);
+    }
+
+    .map::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+      background-size: 18px 18px;
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .road {
+      position: absolute;
+      background: rgba(33, 42, 56, 0.7);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);
+    }
+
+    .road-h { height: 18px; border-radius: 9px; }
+    .road-v { width: 18px; border-radius: 9px; }
+
+    .building {
+      position: absolute;
+      width: 74px;
+      padding: 10px 8px;
+      border-radius: 18px;
+      border: 1px solid rgba(9, 18, 28, 0.18);
+      background: rgba(244, 249, 255, 0.92);
+      color: #07111d;
       text-align: center;
-      padding: 40px;
-      border: 1px solid #334155;
-      border-radius: 16px;
-      background: #111827;
-      max-width: 700px;
+      font-size: 11px;
+      line-height: 1.15;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+      transform: translate(-50%, -50%);
     }
-    h1 {
-      margin-top: 0;
+
+    .building strong { display: block; font-size: 16px; margin-bottom: 4px; }
+    .building.active { outline: 3px solid rgba(255, 215, 106, 0.8); }
+
+    .hero {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      transition: left 420ms ease, top 420ms ease;
+      z-index: 2;
+      animation: bob 1.4s infinite ease-in-out;
+      filter: drop-shadow(0 10px 12px rgba(0,0,0,0.28));
+    }
+
+    @keyframes bob {
+      0%, 100% { transform: translate(-50%, -50%); }
+      50% { transform: translate(-50%, calc(-50% - 5px)); }
+    }
+
+    .pixel {
+      display: grid;
+      grid-template-columns: repeat(6, 8px);
+      grid-template-rows: repeat(7, 8px);
+      gap: 1px;
+      padding: 5px;
+      border-radius: 14px;
+      background: rgba(9, 18, 34, 0.3);
+      backdrop-filter: blur(3px);
+    }
+
+    .px { width: 8px; height: 8px; background: transparent; }
+    .hair { background: #162033; }
+    .skin { background: #f2c18b; }
+    .shirt { background: #6d84ff; }
+    .pants { background: #26334e; }
+    .shoe { background: #111821; }
+    .spark { background: #ffd76a; }
+
+    .birth-layout, .ending-layout {
+      display: grid;
+      grid-template-columns: 1fr 0.9fr;
+      gap: 14px;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .birth-left, .ending-left {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .birth-name {
       font-size: 40px;
+      letter-spacing: -0.05em;
+      line-height: 0.95;
     }
-    p {
-      color: #cbd5e1;
+
+    .birth-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .info-chip {
+      padding: 13px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .info-chip small { color: var(--muted); display: block; margin-bottom: 6px; }
+
+    .play-layout {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 12px;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .hud {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr 1fr;
+      gap: 12px;
+    }
+
+    .hud-card {
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .hud-value {
+      font-size: 26px;
+      letter-spacing: -0.04em;
+      font-weight: 800;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 0.95fr 0.9fr 1.15fr;
+      gap: 12px;
+      min-height: 0;
+      height: 100%;
+    }
+
+    .column {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .panel {
+      padding: 14px;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      overflow: auto;
+      padding-right: 4px;
+      min-height: 0;
+    }
+
+    .metric {
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .metric-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      font-size: 13px;
+      color: #d8e4ff;
+    }
+
+    .metric strong {
       font-size: 18px;
-      line-height: 1.5;
+      letter-spacing: -0.03em;
+      color: white;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow: auto;
+      padding-right: 4px;
+      min-height: 0;
+    }
+
+    .history-item {
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.05);
+      font-size: 13px;
+      line-height: 1.45;
+      color: #d7e3ff;
+    }
+
+    .history-item small {
+      display: block;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .decision-card {
+      padding: 16px;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    .decision-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .stage-tag {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(104, 240, 193, 0.12);
+      color: #d7fff3;
+      border: 1px solid rgba(104, 240, 193, 0.2);
+      font-size: 12px;
+    }
+
+    .npc-box {
+      padding: 12px 13px;
+      border-radius: 16px;
+      background: rgba(136, 169, 255, 0.08);
+      border: 1px solid rgba(136, 169, 255, 0.14);
+      color: #dce7ff;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      overflow: auto;
+      padding-right: 4px;
+      min-height: 0;
+    }
+
+    .option {
+      padding: 13px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 188px;
+      text-align: left;
+    }
+
+    .option:hover { border-color: rgba(136,169,255,0.35); }
+    .option.locked {
+      opacity: 0.5;
+      cursor: not-allowed;
+      border-style: dashed;
+    }
+
+    .option-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .option-title {
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.25;
+      color: white;
+    }
+
+    .chance {
+      padding: 7px 9px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.06);
+      font-size: 11px;
+      color: #dbe6ff;
+      white-space: nowrap;
+    }
+
+    .impact-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: auto;
+    }
+
+    .impact {
+      padding: 6px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: #dbe6ff;
+    }
+
+    .impact.up { color: #c8fff0; border-color: rgba(104, 240, 193, 0.22); background: rgba(104, 240, 193, 0.12); }
+    .impact.down { color: #ffd3df; border-color: rgba(255, 122, 159, 0.24); background: rgba(255, 122, 159, 0.12); }
+
+    .lock-note {
+      margin-top: auto;
+      font-size: 12px;
+      color: #ffd6df;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      line-height: 1.35;
+    }
+
+    .progress-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ending-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .ending-title {
+      font-size: 42px;
+      letter-spacing: -0.05em;
+      line-height: 0.95;
+      max-width: 12ch;
+    }
+
+    .reflection {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(136, 169, 255, 0.08);
+      border: 1px solid rgba(136, 169, 255, 0.18);
+      line-height: 1.55;
+      color: #e6efff;
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      color: #dbe6ff;
+      font-size: 14px;
+    }
+
+    .list div {
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: auto;
+    }
+
+    @media (max-width: 1240px) {
+      .title-screen, .builder-layout, .birth-layout, .ending-layout { grid-template-columns: 1fr; }
+      .main-grid { grid-template-columns: 1fr; }
+      .hud { grid-template-columns: 1fr; }
+      .options, .world-grid, .metrics-grid, .birth-grid, .ending-grid, .title-metrics { grid-template-columns: 1fr; }
+      .shell { overflow: auto; }
+      html, body { overflow: auto; }
+      #app { height: auto; }
+      .screen { position: relative; min-height: 100vh; }
     }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h1>It works</h1>
-    <p>If you can see this page, your Vercel deployment is connected correctly.</p>
-    <p>After this works, replace this file with the full game code.</p>
-  </div>
+  <div id="app"></div>
+  <script>
+    const TAX_LEVELS = [
+      { label: "0% tax", desc: "Pure turbo-capitalism. Your wallet stays full, public systems do not." },
+      { label: "10% tax", desc: "Minimal state. Cheap to earn, expensive to fall." },
+      { label: "20% tax", desc: "Lean government with patchy safety nets." },
+      { label: "30% tax", desc: "Basic public services begin to matter." },
+      { label: "40% tax", desc: "Balanced model with visible redistribution." },
+      { label: "50% tax", desc: "Strong public investment and moderate private upside." },
+      { label: "60% tax", desc: "Heavy redistribution. Risk-taking slows, floors rise." },
+      { label: "70% tax", desc: "High social guarantee, lower private accumulation." },
+      { label: "80% tax", desc: "Very compressed inequality. Elite upside is constrained." },
+      { label: "90% tax", desc: "Almost fully collective model. Extreme private wealth is nearly impossible." }
+    ];
+
+    const EDUCATION_LEVELS = [
+      { label: "Tier 1: Bare minimum", desc: "Underfunded schools, lucky kids carry themselves." },
+      { label: "Tier 2: Uneven", desc: "Some strong schools, many weak ones." },
+      { label: "Tier 3: Competent", desc: "Reliable public education with solid mobility." },
+      { label: "Tier 4: Strong", desc: "High-quality schooling, tutoring, libraries, career tracks." },
+      { label: "Tier 5: Elite public system", desc: "World-class universal education." }
+    ];
+
+    const HEALTHCARE_LEVELS = [
+      { label: "Tier 1: Market only", desc: "Care exists, but mainly for people who can pay." },
+      { label: "Tier 2: Patchy coverage", desc: "Clinics help, bills still wreck families." },
+      { label: "Tier 3: Basic coverage", desc: "You usually get treated before things spiral." },
+      { label: "Tier 4: Strong coverage", desc: "Preventive care and mental health are real." },
+      { label: "Tier 5: Universal care", desc: "Illness rarely means financial collapse." }
+    ];
+
+    const WELFARE_LEVELS = [
+      { label: "Level 1: Survival only", desc: "Miss one paycheck and gravity wins." },
+      { label: "Level 2: Thin cushion", desc: "Temporary help, lots of paperwork, limited dignity." },
+      { label: "Level 3: Real safety net", desc: "Bad luck hurts, but does not automatically destroy you." },
+      { label: "Level 4: Strong floor", desc: "The system actively prevents freefall." }
+    ];
+
+    const HOUSING_LEVELS = [
+      { label: "Model 1: Public commons", desc: "Housing is treated like a right. Asset upside is weaker." },
+      { label: "Model 2: Rent shield", desc: "Strong rent protections and public buildout." },
+      { label: "Model 3: Mixed market", desc: "Some protection, some speculation." },
+      { label: "Model 4: Investor city", desc: "Property owners win big. Renters get squeezed." },
+      { label: "Model 5: Pure speculation", desc: "Housing behaves like a boss fight with a mortgage skin." }
+    ];
+
+    const LABOR_LEVELS = [
+      { label: "Level 1: Wild west", desc: "Firms dominate. Job security is low, wages swing hard." },
+      { label: "Level 2: Weak labor", desc: "You can work, but you have little leverage." },
+      { label: "Level 3: Balanced", desc: "Workers and firms both have tools." },
+      { label: "Level 4: Strong labor", desc: "Unions and protections shape the economy." },
+      { label: "Level 5: Worker power", desc: "Layoffs, hours, and pay all face strong constraints." }
+    ];
+
+    const POLICING_LEVELS = [
+      { label: "Level 1: Light touch", desc: "High personal freedom, weaker public order." },
+      { label: "Level 2: Flexible", desc: "Mostly permissive, intervention is selective." },
+      { label: "Level 3: Standard", desc: "Conventional rule enforcement." },
+      { label: "Level 4: Heavy", desc: "High surveillance, higher friction for protest and hustle." },
+      { label: "Level 5: Iron mode", desc: "Security dominates civic life." }
+    ];
+
+    const CITIES = [
+      { place: "New Harbor", country: "United States" },
+      { place: "Monterrey Vista", country: "Mexico" },
+      { place: "Porto Azul", country: "Brazil" },
+      { place: "Marseille Quay", country: "France" },
+      { place: "Leeds Forge", country: "United Kingdom" },
+      { place: "Accra Bloom", country: "Ghana" },
+      { place: "Lagos Circuit", country: "Nigeria" },
+      { place: "Mumbai Heights", country: "India" },
+      { place: "Manila North", country: "Philippines" },
+      { place: "Bucharest Loop", country: "Romania" },
+      { place: "Tbilisi Rise", country: "Georgia" },
+      { place: "Medellin Vista", country: "Colombia" }
+    ];
+
+    const FIRST_NAMES = ["Mika", "Ari", "Noor", "Leo", "Nia", "Sami", "Elio", "Mara", "Kian", "Lina", "Jules", "Amina"];
+    const LAST_NAMES = ["Vale", "Ortega", "Santos", "Mercer", "Sen", "Dawson", "Kim", "Rossi", "Ibrahim", "Costa", "Petrov", "Bennett"];
+
+    const METRICS = {
+      bank: { label: "Bank", icon: "💵", kind: "money", max: 250000 },
+      health: { label: "Health", icon: "❤️", kind: "score", max: 100 },
+      education: { label: "Education", icon: "🎓", kind: "score", max: 100 },
+      happiness: { label: "Happiness", icon: "🙂", kind: "score", max: 100 },
+      housing: { label: "Housing", icon: "🏠", kind: "score", max: 100 },
+      assets: { label: "Assets", icon: "🏦", kind: "money", max: 300000 },
+      debt: { label: "Debt", icon: "📉", kind: "money", max: 180000 },
+      social: { label: "Social", icon: "🫂", kind: "score", max: 100 },
+      stress: { label: "Stress", icon: "⚡", kind: "score", max: 100 },
+      power: { label: "Power", icon: "👑", kind: "score", max: 100 }
+    };
+
+    const LANDMARKS = {
+      home: { label: "Home", icon: "⌂", x: 17, y: 72 },
+      school: { label: "School", icon: "▤", x: 29, y: 29 },
+      clinic: { label: "Clinic", icon: "✚", x: 73, y: 28 },
+      market: { label: "Market", icon: "¤", x: 79, y: 66 },
+      office: { label: "Office", icon: "▦", x: 54, y: 41 },
+      cityhall: { label: "City Hall", icon: "⚑", x: 52, y: 74 },
+      station: { label: "Transit", icon: "⇄", x: 26, y: 54 },
+      park: { label: "Park", icon: "✿", x: 84, y: 46 }
+    };
+
+    const EVENTS = [
+      {
+        age: 6,
+        stage: "Childhood",
+        location: "school",
+        title: "The School Lottery",
+        text: "Your district opens a magnet-school track with limited seats. Ms. Ortega says this could reshape your future, but getting in is not guaranteed.",
+        npc: "Ms. Ortega: 'A lucky door is still a door. Are you pushing on it?'",
+        options: [
+          { label: "Take the exam", desc: "Bet on academic escape velocity.", chance: 0.72, effects: { education: 14, stress: 6, power: 4 }, fail: { education: 4, happiness: -3, stress: 8 }, envReq: { education: 2 }, lock: "Needs at least Tier 3 education.", addFlags: ["examKid"] },
+          { label: "Stay local and make friends", desc: "Less upside, more belonging.", chance: 0.94, effects: { social: 8, happiness: 5, education: 4 }, fail: { social: 3, happiness: 2 } },
+          { label: "Ask a relative to tutor you", desc: "Family effort beats system weakness.", chance: 0.68, effects: { education: 10, social: 3, bank: -300 }, fail: { bank: -300, stress: 5, education: 3 }, statReq: { bank: 150 }, lock: "Your family needs at least a little cash.", addFlags: ["tutored"] },
+          { label: "Skip it and play outside", desc: "Childhood joy now, fewer doors later.", chance: 1, effects: { happiness: 9, education: -3, power: -2 }, fail: { happiness: 9, education: -3, power: -2 }, addFlags: ["freeSpirit"] }
+        ]
+      },
+      {
+        age: 8,
+        stage: "Childhood",
+        location: "home",
+        title: "Rent Week Panic",
+        text: "A jump in food and rent hits your household. The lights stay on only if someone gives something up.",
+        npc: "Your guardian whispers: 'We can make one smart move, not four.'",
+        options: [
+          { label: "You help by doing odd jobs", desc: "Earn a little, grow up early.", chance: 0.78, effects: { bank: 350, social: 4, happiness: -4, stress: 5 }, fail: { bank: 120, stress: 8, happiness: -5 }, addFlags: ["workedYoung"] },
+          { label: "Apply for assistance", desc: "Trust the safety net you designed.", chance: 0.88, effects: { bank: 500, stress: -6, housing: 6 }, fail: { bank: 120, stress: 4, happiness: -3 }, envReq: { welfare: 1 }, lock: "Needs more than the thinnest welfare state." },
+          { label: "Move to a smaller place", desc: "Stability first, pride later.", chance: 0.9, effects: { housing: -4, bank: 250, stress: 2 }, fail: { housing: -8, stress: 6, happiness: -3 } },
+          { label: "Ignore it and hope it passes", desc: "The classic bad strategy.", chance: 0.4, effects: { happiness: 2 }, fail: { housing: -10, stress: 10, bank: -250 }, addFlags: ["chaoticHome"] }
+        ]
+      },
+      {
+        age: 11,
+        stage: "Childhood",
+        location: "clinic",
+        title: "The Bad Cough",
+        text: "A lingering cough turns serious. Dr. Sen says treatment is simple, unless cost or delay turns it into a bigger problem.",
+        npc: "Dr. Sen: 'Prevention is cheap. Delay is where life gets expensive.'",
+        options: [
+          { label: "Get treated immediately", desc: "Health first, bill second.", chance: 0.92, effects: { health: 12, bank: -250, stress: -5 }, fail: { health: 6, bank: -250, stress: 3 } },
+          { label: "Use public care", desc: "This works best when the system works.", chance: 0.86, effects: { health: 12, bank: -40, stress: -4 }, fail: { health: 2, stress: 7, bank: -120 }, envReq: { healthcare: 2 }, lock: "Needs at least Tier 3 healthcare." },
+          { label: "Wait it out", desc: "Cheap today, dangerous tomorrow.", chance: 0.36, effects: { bank: 50 }, fail: { health: -12, stress: 8, education: -4 }, addFlags: ["chronicIssue"] },
+          { label: "Let a community elder treat it", desc: "Warm soup, herbs, and mixed odds.", chance: 0.55, effects: { health: 4, social: 5, happiness: 3 }, fail: { health: -6, social: 2, stress: 4 } }
+        ]
+      },
+      {
+        age: 14,
+        stage: "Teen",
+        location: "market",
+        title: "After-School Crew",
+        text: "Your friend Kiko offers three different scenes: sports, neighborhood hustle, activism club, or a coding lab with weird hours.",
+        npc: "Kiko grins: 'Pick your faction. Every map has one.'",
+        options: [
+          { label: "Join the coding lab", desc: "Late nights, future upside.", chance: 0.7, effects: { education: 12, power: 4, happiness: -2 }, fail: { education: 4, stress: 5 }, envReq: { education: 2 }, lock: "Needs at least Tier 3 education.", addFlags: ["techKid"] },
+          { label: "Play competitive sports", desc: "Status, discipline, and sore knees.", chance: 0.76, effects: { health: 8, social: 8, power: 3 }, fail: { health: -4, social: 4, stress: 4 }, addFlags: ["athlete"] },
+          { label: "Run low-key street reselling", desc: "Cash now, risk later.", chance: 0.67, effects: { bank: 800, power: 4, stress: 5 }, fail: { bank: 150, stress: 10, power: -3 }, forbidEnv: { policing: 4 }, lock: "The policing level is too intense for this hustle.", addFlags: ["hustler"] },
+          { label: "Join the activism club", desc: "Less money, more civic muscle.", chance: 0.8, effects: { social: 9, power: 6, happiness: 4 }, fail: { social: 4, stress: 4 }, addFlags: ["activist"] }
+        ]
+      },
+      {
+        age: 16,
+        stage: "Teen",
+        location: "school",
+        title: "National Exam Season",
+        text: "One test now can open scholarships, apprenticeships, or nothing at all. Everyone suddenly acts like your life can be reduced to a percentile.",
+        npc: "Ms. Ortega: 'The system loves a ranking. You decide what to do with it.'",
+        options: [
+          { label: "Go all in on prep", desc: "Stressful, expensive, possibly huge.", chance: 0.74, effects: { education: 16, stress: 8, power: 5, bank: -400 }, fail: { education: 5, stress: 10, bank: -400 }, statReq: { bank: 250 }, lock: "You need some money for materials.", addFlags: ["examPrep"] },
+          { label: "Study with friends", desc: "Moderate upside, strong community.", chance: 0.82, effects: { education: 10, social: 6, stress: 2 }, fail: { education: 4, social: 2, stress: 4 } },
+          { label: "Work instead of studying", desc: "Immediate cash, future compression.", chance: 0.9, effects: { bank: 950, education: -6, stress: 6, power: 1 }, fail: { bank: 400, stress: 8, education: -4 }, addFlags: ["fullTimeEarly"] },
+          { label: "Refuse the ranking game", desc: "Self-respect, fewer formal doors.", chance: 0.88, effects: { happiness: 5, power: 3, education: -3 }, fail: { happiness: 2, power: 1 } }
+        ]
+      },
+      {
+        age: 18,
+        stage: "Teen",
+        location: "station",
+        title: "Graduation Crossroads",
+        text: "Everyone wants your next move on a single line: college, apprenticeship, military service, or stay home and build money.",
+        npc: "Your guardian says: 'Pick the road you can survive, not the one that looks pretty in a brochure.'",
+        options: [
+          { label: "Take the scholarship shot", desc: "High ceiling if you can get funded.", chance: 0.73, effects: { education: 15, debt: 9000, power: 6, bank: -1200 }, fail: { debt: 4000, education: 5, stress: 7 }, statReq: { education: 35 }, lock: "Your education stat is too low for a strong scholarship run.", addFlags: ["collegePath"] },
+          { label: "Start an apprenticeship", desc: "Practical skills, stable climb.", chance: 0.84, effects: { bank: 1800, education: 8, housing: 3, power: 3 }, fail: { bank: 650, education: 4, stress: 4 }, addFlags: ["tradePath"] },
+          { label: "Enter public service", desc: "Structured path, strong for disciplined players.", chance: 0.72, effects: { bank: 1200, health: 4, power: 8, stress: 5 }, fail: { bank: 500, stress: 9, health: -4 }, addFlags: ["servicePath"] },
+          { label: "Stay home and stack cash", desc: "Short-term security with social tradeoffs.", chance: 0.9, effects: { bank: 2200, social: -3, happiness: -3, housing: 2 }, fail: { bank: 900, social: -2, stress: 4 }, addFlags: ["homeBase"] }
+        ]
+      },
+      {
+        age: 20,
+        stage: "Young Adult",
+        location: "home",
+        title: "Tiny Apartment Hunt",
+        text: "You want your own place. The market replies with tiny boxes, scary deposits, and a landlord named Mr. Pike who smiles like a side quest villain.",
+        npc: "Mr. Pike: 'Everyone wants independence. Few can afford square footage.'",
+        options: [
+          { label: "Rent a tiny studio", desc: "Freedom, but cash burn.", chance: 0.88, effects: { housing: 6, bank: -1400, happiness: 4, stress: 3 }, fail: { housing: 2, bank: -1800, stress: 6 } },
+          { label: "Stay with family longer", desc: "Financially wise, emotionally mixed.", chance: 0.94, effects: { bank: 1200, housing: 3, happiness: -2, social: 2 }, fail: { bank: 800, happiness: -4 } },
+          { label: "Get subsidized housing", desc: "Strong if your system actually built it.", chance: 0.8, effects: { housing: 10, bank: -300, stress: -5 }, fail: { housing: 2, stress: 5, bank: -150 }, envReq: { housing: 1 }, lock: "Needs at least a rent-shield housing model." },
+          { label: "Couch-hop and gamble", desc: "Maximum volatility run.", chance: 0.48, effects: { bank: 1500, housing: -8, social: 4 }, fail: { housing: -14, stress: 10, happiness: -6 }, addFlags: ["unstableHousing"] }
+        ]
+      },
+      {
+        age: 22,
+        stage: "Young Adult",
+        location: "office",
+        title: "Mentor Offer",
+        text: "Director Vale notices you. One path is a polished internship, another is union organizing, another is freelancing, another is disappearing into gig work.",
+        npc: "Director Vale: 'This city rewards positioning almost as much as talent.'",
+        options: [
+          { label: "Take the elite internship", desc: "Great brand name, brutal gatekeeping.", chance: 0.68, effects: { power: 10, bank: 1800, education: 5, stress: 6 }, fail: { power: 2, stress: 8, happiness: -3 }, statReq: { education: 45 }, lock: "You need stronger education for the polished track.", addFlags: ["prestige"] },
+          { label: "Join a union drive", desc: "Lower pay now, more leverage later.", chance: 0.76, effects: { social: 10, power: 8, bank: 600, stress: 3 }, fail: { social: 4, stress: 6 }, envReq: { labor: 2 }, lock: "Your labor protections are too weak for this to stick.", addFlags: ["union"] },
+          { label: "Freelance three jobs", desc: "Cash and chaos.", chance: 0.73, effects: { bank: 2500, stress: 8, happiness: -4, power: 2 }, fail: { bank: 700, stress: 11, health: -4 }, addFlags: ["freelance"] },
+          { label: "Go fully gig economy", desc: "Fast start, thin floor.", chance: 0.82, effects: { bank: 1300, stress: 5, power: -1 }, fail: { bank: 400, stress: 8, housing: -2 }, addFlags: ["gig"] }
+        ]
+      },
+      {
+        age: 24,
+        stage: "Young Adult",
+        location: "home",
+        title: "Family Emergency Transfer",
+        text: "A sibling needs money fast. Helping them could slow your own climb. Refusing could haunt the relationship for years.",
+        npc: "Your sibling texts: 'I know your budget is real. I also know I need help.'",
+        options: [
+          { label: "Send the money", desc: "Loyalty over optimization.", chance: 0.95, effects: { bank: -1800, social: 12, happiness: 5, stress: 2 }, fail: { bank: -1800, social: 9, stress: 4 }, addFlags: ["familyFirst"] },
+          { label: "Help them navigate public aid", desc: "Time instead of money.", chance: 0.8, effects: { social: 6, power: 4, bank: -200, stress: 1 }, fail: { social: -2, stress: 6 }, envReq: { welfare: 1 }, lock: "The safety net is too thin for this option to really work." },
+          { label: "Offer a loan with terms", desc: "Financially cleaner, emotionally risky.", chance: 0.7, effects: { bank: -900, social: -3, power: 4 }, fail: { bank: -1800, social: -7, happiness: -3 } },
+          { label: "Say no", desc: "Protect your build, damage trust.", chance: 1, effects: { bank: 0, social: -10, happiness: -4, stress: 3 }, fail: { bank: 0, social: -10, happiness: -4, stress: 3 }, addFlags: ["strainedFamily"] }
+        ]
+      },
+      {
+        age: 26,
+        stage: "Young Adult",
+        location: "clinic",
+        title: "Burnout or Checkup",
+        text: "You have headaches, bad sleep, and the exact facial expression of someone running too many tabs. You can intervene now or keep pretending momentum is health.",
+        npc: "Dr. Sen: 'Your grindset is not a medical treatment.'",
+        options: [
+          { label: "Book therapy and rest", desc: "Expensive now, stabilizing later.", chance: 0.86, effects: { health: 12, happiness: 8, bank: -850, stress: -12 }, fail: { health: 6, bank: -850, stress: -5 }, envReq: { healthcare: 2 }, lock: "Needs at least Tier 3 healthcare." },
+          { label: "Power through with caffeine", desc: "Legendary bad idea.", chance: 0.52, effects: { bank: 450, power: 3 }, fail: { health: -14, stress: 12, happiness: -6 }, addFlags: ["burnout"] },
+          { label: "Change your workload", desc: "Less money, more life.", chance: 0.8, effects: { bank: -600, health: 8, stress: -8, happiness: 5 }, fail: { bank: -900, stress: -2, happiness: 2 } },
+          { label: "Let friends drag you outside", desc: "Community as medicine.", chance: 0.85, effects: { happiness: 8, social: 7, stress: -5 }, fail: { happiness: 4, social: 4, stress: -2 } }
+        ]
+      },
+      {
+        age: 29,
+        stage: "Adult",
+        location: "office",
+        title: "Promotion or Principle",
+        text: "Your boss offers a fast promotion if you help justify cuts that hit lower-paid workers. The money is real. So is the compromise.",
+        npc: "Boss Elena says: 'This is how the ladder works. Try not to stare down.'",
+        options: [
+          { label: "Take the promotion", desc: "Big career jump, moral cost.", chance: 0.8, effects: { bank: 5000, power: 11, stress: 5, happiness: -4 }, fail: { bank: 1800, power: 4, stress: 6 } },
+          { label: "Refuse and stay clean", desc: "Less money, more self-respect.", chance: 0.92, effects: { happiness: 7, social: 5, power: -2 }, fail: { happiness: 4, social: 2 } },
+          { label: "Organize against the cuts", desc: "Potentially huge, potentially career-ending.", chance: 0.63, effects: { social: 12, power: 7, happiness: 6 }, fail: { bank: -1800, power: -5, stress: 9 }, flagsReq: ["union"], lock: "You need a union-organizer path to credibly pull this off." },
+          { label: "Leak the plan anonymously", desc: "Chaotic ethics route.", chance: 0.58, effects: { power: 5, social: 4 }, fail: { bank: -2500, stress: 12, power: -7 }, forbidFlags: ["ironMarked"], addFlags: ["ironMarked"] }
+        ]
+      },
+      {
+        age: 32,
+        stage: "Adult",
+        location: "market",
+        title: "Housing Market Surge",
+        text: "Property prices suddenly moon. Homeowners celebrate. Renters stare at listings like they are boss health bars.",
+        npc: "A broker says: 'Real estate is destiny.' You are not fully convinced.",
+        options: [
+          { label: "Buy a small place", desc: "Huge commitment, possible long-term win.", chance: 0.7, effects: { assets: 60000, debt: 35000, housing: 14, power: 6, bank: -8000 }, fail: { debt: 9000, bank: -2500, stress: 8 }, statReq: { bank: 5000 }, lock: "You need enough cash for a down payment." , addFlags: ["homeOwner"]},
+          { label: "Keep renting and invest cash", desc: "Flexibility over ownership identity.", chance: 0.84, effects: { bank: -1500, assets: 12000, housing: -2, power: 2 }, fail: { assets: 3000, housing: -4, stress: 3 } },
+          { label: "Fight for tenant protections", desc: "Collective defense route.", chance: 0.76, effects: { housing: 8, social: 10, power: 7 }, fail: { housing: 1, social: 4, stress: 5 }, envReq: { housing: 1 }, lock: "Your housing model is too speculative for fast policy wins." },
+          { label: "Move to a cheaper edge city", desc: "A map change with tradeoffs.", chance: 0.88, effects: { bank: 2000, housing: 5, social: -5, happiness: -2 }, fail: { bank: 900, housing: 2, social: -7 } }
+        ]
+      },
+      {
+        age: 35,
+        stage: "Adult",
+        location: "cityhall",
+        title: "The Protest Season",
+        text: "A policy crisis hits your city. Streets fill. Cameras roll. Everyone wants neutrality from people whose lives are not neutral.",
+        npc: "Amina the journalist asks: 'When rules shape your life, is silence still apolitical?'",
+        options: [
+          { label: "Join the marches", desc: "Visible conviction, visible risk.", chance: 0.74, effects: { power: 9, social: 10, happiness: 5, stress: 4 }, fail: { power: 1, social: 3, stress: 10, health: -4 }, forbidEnv: { policing: 4 }, lock: "Your policing level is too intense for open protest to be low-risk.", addFlags: ["publicVoice"] },
+          { label: "Build policy proposals", desc: "Less cinematic, more durable.", chance: 0.8, effects: { education: 5, power: 8, social: 4 }, fail: { power: 2, stress: 4 }, statReq: { education: 45 }, lock: "You need stronger education to translate outrage into policy." },
+          { label: "Keep your head down", desc: "Safer now, smaller civic footprint.", chance: 0.95, effects: { bank: 500, stress: -2, power: -4 }, fail: { bank: 200, power: -3 } },
+          { label: "Monetize the chaos", desc: "Consulting, security, media, speculation. Darkly efficient.", chance: 0.61, effects: { bank: 3200, power: 4, happiness: -6 }, fail: { bank: -1200, stress: 7, social: -5 } }
+        ]
+      },
+      {
+        age: 39,
+        stage: "Adult",
+        location: "market",
+        title: "The Founder Window",
+        text: "You spot a business gap. It might be a real company, a lifestyle hustle, or a flaming crater for your savings.",
+        npc: "Kiko says: 'This is either your origin story or the funniest mistake of your thirties.'",
+        options: [
+          { label: "Launch the company", desc: "High risk, high upside, all gas.", chance: 0.62, effects: { bank: -6000, assets: 35000, power: 12, stress: 8 }, fail: { bank: -5000, debt: 7000, stress: 12, happiness: -5 }, statReq: { bank: 4000 }, lock: "You need some starting capital.", addFlags: ["founder"] },
+          { label: "Start tiny on nights and weekends", desc: "Slower, safer climb.", chance: 0.83, effects: { bank: -1200, assets: 9000, power: 5, stress: 4 }, fail: { bank: -800, stress: 6, happiness: -2 } },
+          { label: "Join a cooperative", desc: "Shared upside, lower hero narrative.", chance: 0.79, effects: { assets: 6000, social: 8, power: 6, bank: 1200 }, fail: { assets: 1200, social: 3 }, envReq: { labor: 3 }, lock: "Your labor system is too weak for this to scale well." },
+          { label: "Do nothing and keep salary maxing", desc: "Conservative build path.", chance: 0.95, effects: { bank: 2500, stress: -2 }, fail: { bank: 1200 } }
+        ]
+      },
+      {
+        age: 43,
+        stage: "Midlife",
+        location: "home",
+        title: "Caregiving Squeeze",
+        text: "A parent needs long-term support. A child or younger relative needs time, money, or both. Midlife arrives carrying invoices.",
+        npc: "Your family group chat has become a crisis-management app.",
+        options: [
+          { label: "Take on the care yourself", desc: "Love-heavy, career-light.", chance: 0.88, effects: { social: 10, happiness: 6, bank: -2500, stress: 7, power: -3 }, fail: { social: 7, bank: -3200, stress: 10 } },
+          { label: "Use public eldercare support", desc: "Best in stronger welfare states.", chance: 0.82, effects: { bank: -900, stress: -4, social: 5, health: 4 }, fail: { bank: -1800, stress: 4 }, envReq: { welfare: 2 }, lock: "Your welfare system is not strong enough for reliable care support." },
+          { label: "Pay for private help", desc: "Efficient if you can afford the burn.", chance: 0.9, effects: { bank: -4500, stress: -8, power: 2 }, fail: { bank: -5200, stress: -2 }, statReq: { bank: 2500 }, lock: "You need real liquidity for private care." },
+          { label: "Split the burden with siblings", desc: "Coordination mini-game.", chance: 0.67, effects: { social: 6, stress: -3, bank: -1200 }, fail: { social: -6, stress: 7, bank: -1500 } }
+        ]
+      },
+      {
+        age: 47,
+        stage: "Midlife",
+        location: "office",
+        title: "Automation Notice",
+        text: "An internal memo says AI and software are 'enhancing efficiency.' Translation: somebody's role is about to disappear.",
+        npc: "Boss Elena says: 'Adaptation is opportunity.' Nobody in the room finds that comforting.",
+        options: [
+          { label: "Reskill immediately", desc: "Painful now, maybe essential.", chance: 0.78, effects: { education: 10, power: 5, bank: -2200, stress: 4 }, fail: { education: 3, bank: -2200, stress: 8 }, statReq: { education: 35 }, lock: "You need a decent base to reskill fast.", addFlags: ["reskilled"] },
+          { label: "Fight the layoff collectively", desc: "Works best with strong labor power.", chance: 0.7, effects: { social: 10, power: 8, bank: 1200 }, fail: { bank: -1800, stress: 10, power: -4 }, envReq: { labor: 2 }, lock: "Your labor rules are too weak for this battle." },
+          { label: "Take severance and pivot", desc: "Cash buffer, identity crisis.", chance: 0.82, effects: { bank: 6000, happiness: -4, power: 2, stress: 3 }, fail: { bank: 2200, stress: 5 } },
+          { label: "Pretend it will miss you", desc: "Classic denial arc.", chance: 0.38, effects: { happiness: 2 }, fail: { bank: -4200, stress: 11, power: -6 }, addFlags: ["jobShock"] }
+        ]
+      },
+      {
+        age: 51,
+        stage: "Midlife",
+        location: "park",
+        title: "Climate Shock",
+        text: "A flood or heat wave hits your district. Infrastructure matters. Insurance matters. So does whether your city treated resilience as a real budget item.",
+        npc: "Amina reports from the street: 'Disasters reveal who got a buffer and who got a press release.'",
+        options: [
+          { label: "Evacuate and protect the family", desc: "Costly, sane, urgent.", chance: 0.87, effects: { bank: -1800, health: 5, stress: 4, housing: 2 }, fail: { bank: -2800, health: -3, stress: 8 } },
+          { label: "Use public emergency support", desc: "Only as good as the system you built.", chance: 0.83, effects: { bank: -500, health: 6, housing: 6, stress: -3 }, fail: { bank: -1500, stress: 7, housing: -4 }, envReq: { welfare: 2 }, lock: "Your public support system is too thin for a clean recovery." },
+          { label: "Rebuild smarter and relocate", desc: "Painful reset, stronger future.", chance: 0.71, effects: { bank: -2600, housing: 10, power: 5, happiness: -2 }, fail: { bank: -3200, housing: 2, stress: 5 } },
+          { label: "Do the cheap patch job", desc: "Saves cash now, leaks later.", chance: 0.52, effects: { bank: 600, housing: -2 }, fail: { bank: -1200, housing: -10, stress: 8 } }
+        ]
+      },
+      {
+        age: 56,
+        stage: "Later Career",
+        location: "office",
+        title: "Second-Career Signal",
+        text: "You are experienced enough to teach, lead, consult, or burn out in perfect silence. The next move shapes the entire late game.",
+        npc: "Director Vale messages: 'Experience compounds too. Decide where to spend it.'",
+        options: [
+          { label: "Teach or mentor", desc: "Lower cash, high civic return.", chance: 0.84, effects: { power: 8, happiness: 8, bank: 1200, social: 7 }, fail: { bank: 600, happiness: 4, social: 3 } },
+          { label: "Consult at a premium", desc: "Monetize mastery.", chance: 0.76, effects: { bank: 9000, power: 7, stress: 5 }, fail: { bank: 2500, stress: 7 }, statReq: { power: 40 }, lock: "You need more status and influence to sell premium advice." },
+          { label: "Retreat and recover", desc: "Protect your health before the endgame.", chance: 0.9, effects: { health: 10, stress: -12, happiness: 7, bank: -1500 }, fail: { health: 5, stress: -4, bank: -1500 } },
+          { label: "Keep sprinting like you are 28", desc: "A suspiciously popular bad plan.", chance: 0.41, effects: { bank: 3500, power: 4 }, fail: { health: -10, stress: 14, happiness: -6 }, forbidFlags: ["burnout"], lock: "You already burned out once. The game remembers." }
+        ]
+      },
+      {
+        age: 61,
+        stage: "Later Career",
+        location: "cityhall",
+        title: "Legacy Vote",
+        text: "You are asked to join a civic board shaping future budgets. You can push fairness, protect your class, fund prestige projects, or step away.",
+        npc: "Amina: 'Now you are close enough to the levers to stop pretending systems are abstract.'",
+        options: [
+          { label: "Fund broad public goods", desc: "Higher floor, fewer vanity trophies.", chance: 0.86, effects: { happiness: 7, power: 8, social: 8 }, fail: { power: 3, social: 4 } },
+          { label: "Protect property owners", desc: "Class defense mode.", chance: 0.8, effects: { assets: 18000, power: 6, happiness: -5 }, fail: { assets: 6000, power: 3, social: -6 }, flagsReq: ["homeOwner"], lock: "This option opens only if you became a property owner." },
+          { label: "Chase the flashy mega-project", desc: "Great ribbon cutting, mixed human impact.", chance: 0.58, effects: { power: 10, bank: 4000 }, fail: { power: -3, social: -8, stress: 7 } },
+          { label: "Decline and stay private", desc: "Peaceful, lower influence.", chance: 0.96, effects: { health: 5, stress: -4, power: -4 }, fail: { health: 3, stress: -2 } }
+        ]
+      },
+      {
+        age: 67,
+        stage: "Retirement",
+        location: "park",
+        title: "Retirement Setup",
+        text: "The scoreboard comes due. You can retire comfortably, work part-time, rely on public systems, or improvise.",
+        npc: "Your future self finally asks the oldest question in the game: 'Did the structure catch you, or did you outrun it?'",
+        options: [
+          { label: "Retire on savings and assets", desc: "This is the clean win path if you built it.", chance: 0.82, effects: { happiness: 10, stress: -10, power: 3 }, fail: { happiness: 5, stress: -4 }, statReq: { assets: 30000 }, lock: "You need stronger assets for a comfortable retirement." },
+          { label: "Rely on public pension and services", desc: "Works best in generous states.", chance: 0.84, effects: { happiness: 6, stress: -8, bank: 1400 }, fail: { happiness: 2, stress: -2, bank: 400 }, envReq: { welfare: 2 }, lock: "Your welfare floor is too weak for this to feel safe." },
+          { label: "Keep part-time work", desc: "A balanced if less glamorous route.", chance: 0.88, effects: { bank: 2400, health: 3, happiness: 4 }, fail: { bank: 900, stress: 5, health: -4 } },
+          { label: "Wing it with optimism", desc: "Bold. Terrifying. Not recommended.", chance: 0.35, effects: { happiness: 4 }, fail: { bank: -2500, stress: 12, housing: -8 } }
+        ]
+      },
+      {
+        age: 74,
+        stage: "Retirement",
+        location: "home",
+        title: "The Final Accounting",
+        text: "You look back. The world you designed gave you a place, a ceiling, a floor, and a thousand random rolls. Now comes the philosophical boss fight: would you choose that same world without knowing you would be you?",
+        npc: "Rawls appears in spirit: 'Justice begins where your self-interest loses the script.'",
+        options: [
+          { label: "Invest in the next generation", desc: "Turn your story into a broader platform.", chance: 0.92, effects: { happiness: 10, social: 8, power: 5, bank: -3000 }, fail: { happiness: 6, social: 4, bank: -3000 } },
+          { label: "Defend the society exactly as built", desc: "Stand by your architecture.", chance: 0.9, effects: { power: 6, happiness: 4 }, fail: { power: 2, happiness: 2 }, addFlags: ["defendedSystem"] },
+          { label: "Admit the system needs repair", desc: "Wisdom route.", chance: 0.96, effects: { happiness: 8, power: 5, social: 6 }, fail: { happiness: 4, social: 2 }, addFlags: ["reformer"] },
+          { label: "Withdraw and keep your gains", desc: "A private ending inside a public philosophy game.", chance: 0.95, effects: { bank: 2500, social: -6, happiness: -2 }, fail: { bank: 1000, social: -4 } }
+        ]
+      }
+    ];
+
+    const state = createInitialState();
+    const app = document.getElementById("app");
+
+    function createInitialState() {
+      return {
+        scene: "title",
+        env: { tax: 4, education: 2, healthcare: 2, welfare: 1, housing: 2, labor: 2, policing: 2 },
+        player: null,
+        stats: null,
+        flags: {},
+        eventIndex: 0,
+        history: [],
+        lastResult: null,
+        fairness: null,
+        spawn: null,
+        ending: null
+      };
+    }
+
+    function resetGame() {
+      const fresh = createInitialState();
+      Object.keys(state).forEach((key) => delete state[key]);
+      Object.assign(state, fresh);
+      render();
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function money(n) {
+      return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Math.round(n));
+    }
+
+    function scorePercent(value, max) {
+      return clamp((value / max) * 100, 0, 100);
+    }
+
+    function metricValue(key, value) {
+      const meta = METRICS[key];
+      return meta.kind === "money" ? money(value) : Math.round(value);
+    }
+
+    function bandFromPercentile(p) {
+      if (p >= 95) return "Top 5%";
+      if (p >= 80) return "Top 20%";
+      if (p >= 60) return "Upper-middle 40%";
+      if (p >= 40) return "Middle band";
+      if (p >= 20) return "Lower 40%";
+      return "Bottom 20%";
+    }
+
+    function computeSociety(env) {
+      const fairness = clamp(28 + env.tax * 5 + env.welfare * 10 + (4 - env.housing) * 6 + env.education * 7 + env.healthcare * 6 + env.labor * 5 - env.policing * 2, 0, 100);
+      const opportunity = clamp(22 + env.education * 11 + env.healthcare * 5 + env.labor * 6 + (4 - env.housing) * 3 + (9 - env.tax) * 2, 0, 100);
+      const safety = clamp(18 + env.healthcare * 11 + env.welfare * 12 + (4 - env.housing) * 4 + env.policing * 8, 0, 100);
+      const volatility = clamp(64 + env.housing * 8 + (9 - env.tax) * 3 - env.welfare * 10 - env.healthcare * 5 - env.labor * 5, 0, 100);
+      const assetAccess = clamp(20 + env.housing * 12 + (9 - env.tax) * 4 - env.welfare * 4 + env.labor * 2, 0, 100);
+      const overall = Math.round((fairness + opportunity + safety + (100 - volatility) + assetAccess) / 5);
+      return { fairness, opportunity, safety, volatility, assetAccess, overall };
+    }
+
+    function randomFrom(list) {
+      return list[Math.floor(Math.random() * list.length)];
+    }
+
+    function spawnPlayer() {
+      const society = computeSociety(state.env);
+      const city = randomFrom(CITIES);
+      const first = randomFrom(FIRST_NAMES);
+      const last = randomFrom(LAST_NAMES);
+      const roll = Math.random() * 100;
+      const birthPercentile = clamp(Math.round(roll + state.env.housing * 6 + (9 - state.env.tax) * 2 - state.env.welfare * 6 - state.env.education * 3 - state.env.healthcare * 2), 1, 99);
+      const band = bandFromPercentile(birthPercentile);
+      const baseBank = birthPercentile > 90 ? 12000 : birthPercentile > 70 ? 4500 : birthPercentile > 45 ? 900 : 150;
+      const baseAssets = birthPercentile > 88 ? 18000 : birthPercentile > 65 ? 2500 : 0;
+      const housing = clamp(30 + (4 - state.env.housing) * 8 + birthPercentile * 0.18 - state.env.housing * (birthPercentile < 40 ? 4 : 0), 0, 100);
+      const stats = {
+        bank: Math.round(baseBank + state.env.welfare * 240 - state.env.housing * 100),
+        health: clamp(38 + state.env.healthcare * 11 + state.env.welfare * 6 + Math.random() * 12 - (100 - birthPercentile) * 0.08, 0, 100),
+        education: clamp(16 + state.env.education * 14 + birthPercentile * 0.24 + Math.random() * 6, 0, 100),
+        happiness: clamp(44 + state.env.welfare * 5 + (4 - state.env.housing) * 2 + Math.random() * 10, 0, 100),
+        housing,
+        assets: Math.round(baseAssets),
+        debt: 0,
+        social: clamp(26 + state.env.welfare * 4 + Math.random() * 20, 0, 100),
+        stress: clamp(32 + state.env.policing * 4 + state.env.housing * 4 - state.env.healthcare * 4 - state.env.welfare * 6 + (50 - birthPercentile) * 0.18, 0, 100),
+        power: clamp(8 + birthPercentile * 0.42 + state.env.education * 3 + state.env.labor * 2 - state.env.policing, 0, 100)
+      };
+
+      state.player = {
+        name: first + " " + last,
+        place: city.place,
+        country: city.country,
+        percentile: birthPercentile,
+        band,
+        archetype: birthPercentile > 85 ? "born near the top of the map" : birthPercentile > 50 ? "born into the unstable middle" : "born close to the floor"
+      };
+      state.stats = stats;
+      state.fairness = society;
+      state.spawn = {
+        headline: state.player.name + " spawns in " + city.place + ", " + city.country,
+        subhead: "You built the rules first. Only now do you learn where you landed."
+      };
+      state.flags = {};
+      state.eventIndex = 0;
+      state.history = [
+        {
+          age: 0,
+          title: "Birth Reveal",
+          text: state.player.name + " enters the world in " + city.place + ", " + city.country + ". The system places you in the " + band + "."
+        }
+      ];
+      state.lastResult = null;
+      state.ending = null;
+    }
+
+    function currentEvent() {
+      return EVENTS[state.eventIndex];
+    }
+
+    function optionLocked(option) {
+      if (option.envReq) {
+        const [key, min] = Object.entries(option.envReq)[0];
+        if (state.env[key] < min) return option.lock || "Environment requirement not met.";
+      }
+      if (option.forbidEnv) {
+        const [key, maxSafe] = Object.entries(option.forbidEnv)[0];
+        if (state.env[key] >= maxSafe) return option.lock || "Environment blocks this choice.";
+      }
+      if (option.statReq) {
+        const [key, min] = Object.entries(option.statReq)[0];
+        if (state.stats[key] < min) return option.lock || "Your stats are too low.";
+      }
+      if (option.flagsReq) {
+        const missing = option.flagsReq.find((flag) => !state.flags[flag]);
+        if (missing) return option.lock || "This route was not unlocked earlier.";
+      }
+      if (option.forbidFlags) {
+        const blocked = option.forbidFlags.find((flag) => state.flags[flag]);
+        if (blocked) return option.lock || "A past choice blocks this option.";
+      }
+      return null;
+    }
+
+    function adjustedChance(baseChance) {
+      const s = state.stats;
+      const bonus = (s.education - 50) / 250 + (s.social - 50) / 280 + (s.power - 40) / 320 + Math.max(0, s.bank) / 70000 + state.fairness.opportunity / 500 - s.stress / 500 - s.debt / 90000;
+      return clamp(baseChance + bonus, 0.15, 0.97);
+    }
+
+    function applyEffects(effects) {
+      Object.entries(effects).forEach(([key, delta]) => {
+        if (METRICS[key].kind === "money") {
+          state.stats[key] = Math.round(state.stats[key] + delta);
+        } else {
+          state.stats[key] = clamp(state.stats[key] + delta, 0, 100);
+        }
+      });
+      state.stats.bank = Math.round(state.stats.bank);
+      state.stats.assets = Math.round(Math.max(0, state.stats.assets));
+      state.stats.debt = Math.round(Math.max(0, state.stats.debt));
+    }
+
+    function applyFlags(list, value) {
+      (list || []).forEach((flag) => { state.flags[flag] = value; });
+    }
+
+    function chooseOption(index) {
+      const event = currentEvent();
+      const option = event.options[index];
+      const lockedReason = optionLocked(option);
+      if (lockedReason) return;
+      const chance = adjustedChance(option.chance || 1);
+      const success = Math.random() < chance;
+      const outcome = success ? option.effects : (option.fail || option.effects);
+      applyEffects(outcome);
+      applyFlags(option.addFlags, true);
+      applyFlags(option.removeFlags, false);
+      if (!success && option.failAddFlags) applyFlags(option.failAddFlags, true);
+
+      state.lastResult = {
+        success,
+        chance,
+        title: option.label,
+        text: success ? "The move lands." : "The move partly fails. The world pushes back."
+      };
+
+      state.history.unshift({
+        age: event.age,
+        title: event.title,
+        text: (success ? "Success: " : "Setback: ") + option.label + ". " + option.desc
+      });
+      state.history = state.history.slice(0, 8);
+
+      state.eventIndex += 1;
+      if (state.eventIndex >= EVENTS.length) {
+        state.ending = getEnding();
+        state.scene = "ending";
+      }
+      render();
+    }
+
+    function getEnding() {
+      const s = state.stats;
+      const society = state.fairness;
+      const wealth = s.bank + s.assets - s.debt;
+      let title = "Stable Citizen Ending";
+      let text = "You built a life with enough floor to stay standing and enough agency to matter. Not glamorous. Not broken. Real.";
+
+      if (wealth > 160000 && s.power > 65) {
+        title = "Elite Architect Ending";
+        text = "You ended wealthy and influential. The question is whether your society worked because it was just, or because it worked for people like you.";
+      } else if (wealth < -5000 && s.stress > 60) {
+        title = "Debt Spiral Ending";
+        text = "Small bad rolls, expensive systems, and thin buffers stacked into a life of constant recovery. This is exactly the outcome Rawls wants you to imagine before choosing institutions.";
+      } else if (s.social > 72 && s.happiness > 60 && wealth < 90000) {
+        title = "Community Builder Ending";
+        text = "You may not have maximized money, but you built relationships, civic weight, and a life that mattered to other people.";
+      } else if (s.health < 30) {
+        title = "Burnout Survivor Ending";
+        text = "You extracted a lot from yourself and the system extracted even more. You reached the ending, but not untouched.";
+      } else if (s.assets > 70000 && state.flags.homeOwner) {
+        title = "Property Ladder Ending";
+        text = "You climbed through ownership. The system made assets a power-up, but mostly for players who could buy early.";
+      } else if (society.fairness > 72 && s.happiness > 58) {
+        title = "Fair Society Win";
+        text = "Your world distributed risk decently, and your life showed it. You still faced randomness, but the floor held.";
+      }
+
+      const rawlsVerdict = society.fairness >= 65 && society.safety >= 60
+        ? "A Rawlsian would likely say your society gave the least advantaged a fighting chance."
+        : "A Rawlsian would likely ask why the least advantaged had to absorb this much risk.";
+
+      return {
+        title,
+        text,
+        wealth,
+        rawlsVerdict,
+        reroll: state.player.band,
+        societyScore: society.overall
+      };
+    }
+
+    function metricTemplate(key, value) {
+      const meta = METRICS[key];
+      const fill = meta.kind === "money" ? scorePercent(Math.max(0, value), meta.max) : scorePercent(value, meta.max);
+      return `
+        <div class="metric">
+          <div class="metric-head"><span>${meta.icon} ${meta.label}</span><strong>${metricValue(key, value)}</strong></div>
+          <div class="bar-shell"><div class="bar-fill" style="width:${fill}%"></div></div>
+        </div>
+      `;
+    }
+
+    function impactTemplate(effects) {
+      return Object.entries(effects || {}).map(([key, delta]) => {
+        const positive = delta >= 0;
+        const sign = positive ? "+" : "";
+        const label = METRICS[key].label;
+        const val = METRICS[key].kind === "money" ? sign + money(delta) : sign + delta;
+        return `<span class="impact ${positive ? "up" : "down"}">${label} ${val}</span>`;
+      }).join("");
+    }
+
+    function optionTemplate(option, idx) {
+      const lockedReason = optionLocked(option);
+      const chance = Math.round(adjustedChance(option.chance || 1) * 100);
+      return `
+        <button class="option ${lockedReason ? "locked" : ""}" data-action="choose" data-index="${idx}">
+          <div class="option-top">
+            <div class="option-title">${option.label}</div>
+            <div class="chance">${chance}% est.</div>
+          </div>
+          <div class="muted" style="font-size:13px; line-height:1.45;">${option.desc}</div>
+          <div class="impact-row">${impactTemplate(option.effects)}</div>
+          ${lockedReason ? `<div class="lock-note">🔒 <span>${lockedReason}</span></div>` : ""}
+        </button>
+      `;
+    }
+
+    function heroPixels() {
+      const grid = [
+        "0,1,hair","1,1,hair","2,1,hair","3,1,hair","4,1,hair",
+        "1,2,hair","2,2,skin","3,2,skin","4,2,hair",
+        "1,3,skin","2,3,skin","3,3,skin","4,3,skin",
+        "1,4,shirt","2,4,shirt","3,4,shirt","4,4,shirt",
+        "1,5,shirt","2,5,shirt","3,5,shirt","4,5,shirt",
+        "1,6,pants","2,6,pants","3,6,pants","4,6,pants",
+        "1,7,shoe","2,7,shoe","3,7,shoe","4,7,shoe",
+        "5,1,spark","5,2,spark"
+      ];
+      const cells = [];
+      for (let y = 1; y <= 7; y++) {
+        for (let x = 0; x <= 5; x++) {
+          const entry = grid.find((item) => item.startsWith(x + "," + y + ","));
+          const klass = entry ? entry.split(",")[2] : "";
+          cells.push(`<span class="px ${klass}"></span>`);
+        }
+      }
+      return `<div class="pixel">${cells.join("")}</div>`;
+    }
+
+    function mapTemplate(locationKey) {
+      return `
+        <div class="map">
+          <div class="road road-h" style="left:10%; top:40%; width:76%;"></div>
+          <div class="road road-h" style="left:14%; top:65%; width:64%;"></div>
+          <div class="road road-v" style="left:29%; top:19%; height:58%;"></div>
+          <div class="road road-v" style="left:54%; top:24%; height:55%;"></div>
+          ${Object.entries(LANDMARKS).map(([key, item]) => `
+            <div class="building ${key === locationKey ? "active" : ""}" style="left:${item.x}%; top:${item.y}%">
+              <strong>${item.icon}</strong>
+              ${item.label}
+            </div>
+          `).join("")}
+          <div class="hero" style="left:${LANDMARKS[locationKey].x}%; top:calc(${LANDMARKS[locationKey].y}% - 10px)">${heroPixels()}</div>
+        </div>
+      `;
+    }
+
+    function renderTitle() {
+      const society = computeSociety(state.env);
+      return `
+        <div class="shell">
+          <div class="screen">
+            <div class="title-screen">
+              <div class="hero-panel card glass">
+                <div style="position:relative; z-index:1; display:flex; flex-direction:column; gap:16px;">
+                  <div class="eyebrow">Public Philosophy RPG • Rawls Mode</div>
+                  <h1>The Veil of Ignorance Simulator</h1>
+                  <p class="lead">Build a society first. Then the game drops you into that same society without telling you who you will be in it. Your job is not just to win. Your job is to find out whether the rules are fair when you do not control your spawn point.</p>
+                  <div class="pill-row">
+                    <span class="pill">🎮 Configure the world</span>
+                    <span class="pill">🧍 Spawn into a random life</span>
+                    <span class="pill">🧠 Make 20 story decisions</span>
+                    <span class="pill">⚖️ End with a Rawls reflection</span>
+                  </div>
+                  <div class="title-actions">
+                    <button class="btn btn-primary" data-action="goto-builder">Start Game</button>
+                    <button class="btn btn-secondary" data-action="quick-random">Quick Random World</button>
+                  </div>
+                </div>
+                <div class="title-bottom">
+                  <div class="mini-card">
+                    <div class="muted" style="font-size:12px; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">What this project is</div>
+                    <div style="font-size:14px; line-height:1.5; color:#e7efff;">An interactive public-philosophy game based on Rawls. It turns theory into a social RPG with visible tradeoffs, luck, constraints, and consequences.</div>
+                  </div>
+                  <div class="mini-card">
+                    <div class="muted" style="font-size:12px; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">Win condition</div>
+                    <div style="font-size:14px; line-height:1.5; color:#e7efff;">Design a world you would still accept if the game spawned you anywhere in it, including the bottom of the ladder.</div>
+                  </div>
+                </div>
+              </div>
+              <div class="preview-panel card glass">
+                <div class="score-box">
+                  <div class="muted" style="font-size:12px; text-transform:uppercase; letter-spacing:0.08em;">Current default world score</div>
+                  <div class="big-score">${society.overall}</div>
+                  <div class="muted">A preview of the kind of world you are about to tune.</div>
+                </div>
+                <div class="title-metrics">
+                  ${renderPreviewBars(society)}
+                </div>
+                <div class="map-card card" style="padding:10px; min-height:286px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                    <h3 style="font-size:16px;">Pixel-world preview</h3>
+                    <span class="tag">Single-screen RPG layout</span>
+                  </div>
+                  ${mapTemplate("school")}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function previewBar(name, value, desc) {
+      return `
+        <div class="score-box">
+          <div class="bar-block">
+            <div class="bar-label"><span>${name}</span><strong>${Math.round(value)}</strong></div>
+            <div class="bar-shell"><div class="bar-fill" style="width:${value}%"></div></div>
+            <div class="muted" style="font-size:12px; line-height:1.4;">${desc}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPreviewBars(society) {
+      return [
+        previewBar("Fairness", society.fairness, "How hard the system punishes a bad spawn."),
+        previewBar("Opportunity", society.opportunity, "How many ladders actually exist."),
+        previewBar("Safety Net", society.safety, "How much the floor catches you."),
+        previewBar("Volatility", society.volatility, "How swingy life becomes."),
+        previewBar("Asset Access", society.assetAccess, "How possible it is to buy into upside." )
+      ].join("");
+    }
+
+    function configCard(key, title, levels, value) {
+      return `
+        <div class="config-card card glass">
+          <div class="config-top">
+            <div class="config-title">${title}</div>
+            <div class="config-value">${levels[value].label}</div>
+          </div>
+          <div class="config-desc">${levels[value].desc}</div>
+          <div class="option-row">
+            ${levels.map((level, idx) => `
+              <button class="toggle ${idx === value ? "active" : ""}" data-action="set-env" data-key="${key}" data-value="${idx}">${key === "tax" ? idx * 10 + "%" : idx + 1}</button>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBuilder() {
+      const society = computeSociety(state.env);
+      return `
+        <div class="shell">
+          <div class="screen">
+            <div class="builder-layout">
+              <div class="builder-left">
+                <div class="builder-header card glass">
+                  <div>
+                    <div class="eyebrow">World Builder</div>
+                    <h2>Design the ecosystem before you know your spawn</h2>
+                    <p class="subtle-note" style="margin-top:8px;">Your player has no control over where they will be born. Lock the constitution first, then the game reveals your life. Higher taxes means taxes are increasing. Lower taxes means you are reducing them. The same logic applies to the rest of the sliders.</p>
+                  </div>
+                  <div class="pill-row" style="justify-content:flex-end;">
+                    <span class="pill">Tax has 10 levels</span>
+                    <span class="pill">Education 5</span>
+                    <span class="pill">Healthcare 5</span>
+                    <span class="pill">Welfare 4</span>
+                    <span class="pill">Housing 5</span>
+                  </div>
+                </div>
+                <div class="world-grid">
+                  ${configCard("tax", "Tax Rate", TAX_LEVELS, state.env.tax)}
+                  ${configCard("education", "Education", EDUCATION_LEVELS, state.env.education)}
+                  ${configCard("healthcare", "Healthcare", HEALTHCARE_LEVELS, state.env.healthcare)}
+                  ${configCard("welfare", "Welfare", WELFARE_LEVELS, state.env.welfare)}
+                  ${configCard("housing", "Housing", HOUSING_LEVELS, state.env.housing)}
+                  ${configCard("labor", "Labor Rules", LABOR_LEVELS, state.env.labor)}
+                  ${configCard("policing", "Policing / Surveillance", POLICING_LEVELS, state.env.policing)}
+                </div>
+              </div>
+              <div class="builder-right">
+                <div class="preview-stack card glass">
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                    <div>
+                      <h3 style="font-size:22px;">Society score</h3>
+                      <div class="muted" style="font-size:13px;">You can see the world you are creating before the roulette wheel spins.</div>
+                    </div>
+                    <div class="big-score" style="font-size:34px;">${society.overall}</div>
+                  </div>
+                  ${renderPreviewBars(society)}
+                </div>
+                <div class="map-card card glass">
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                    <h3 style="font-size:18px;">Live map preview</h3>
+                    <span class="tag">Your avatar appears after the world lock</span>
+                  </div>
+                  ${mapTemplate("cityhall")}
+                </div>
+                <div class="score-box">
+                  <div class="muted" style="font-size:12px; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px;">Build readout</div>
+                  <div class="tag-row">
+                    <span class="tag">Floor: ${society.safety >= 65 ? "Strong" : society.safety >= 40 ? "Medium" : "Weak"}</span>
+                    <span class="tag">Mobility: ${society.opportunity >= 65 ? "High" : society.opportunity >= 40 ? "Mixed" : "Low"}</span>
+                    <span class="tag">Chaos: ${society.volatility >= 65 ? "High" : society.volatility >= 40 ? "Medium" : "Low"}</span>
+                    <span class="tag">Asset game: ${society.assetAccess >= 65 ? "Open" : society.assetAccess >= 40 ? "Partial" : "Hard"}</span>
+                  </div>
+                </div>
+                <div class="footer-actions">
+                  <button class="btn btn-secondary" data-action="back-title">Back</button>
+                  <button class="btn btn-primary" data-action="lock-world">Lock the Constitution</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBirth() {
+      return `
+        <div class="shell">
+          <div class="screen">
+            <div class="birth-layout">
+              <div class="birth-left card glass">
+                <div class="eyebrow">Spawn Reveal</div>
+                <div class="birth-name">${state.player.name}</div>
+                <div style="font-size:18px; color:#dce7ff;">Born in ${state.player.place}, ${state.player.country}</div>
+                <p class="lead" style="font-size:17px; max-width:60ch;">${state.spawn.subhead} The game places you in the <strong>${state.player.band}</strong>, ${state.player.archetype}.</p>
+                <div class="birth-grid">
+                  <div class="info-chip"><small>Population placement</small><strong>${state.player.band}</strong></div>
+                  <div class="info-chip"><small>Birth percentile roll</small><strong>${state.player.percentile}</strong></div>
+                  <div class="info-chip"><small>Society score</small><strong>${state.fairness.overall}</strong></div>
+                  <div class="info-chip"><small>Rawls challenge</small><strong>Would you still pick this world?</strong></div>
+                </div>
+                <div class="footer-actions">
+                  <button class="btn btn-secondary" data-action="back-builder">Rebuild World</button>
+                  <button class="btn btn-primary" data-action="begin-life">Live This Life</button>
+                </div>
+              </div>
+              <div class="preview-panel card glass">
+                <div class="map-card card" style="padding:10px; min-height:300px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                    <h3 style="font-size:18px;">Your first map</h3>
+                    <span class="tag">${state.player.place}</span>
+                  </div>
+                  ${mapTemplate("home")}
+                </div>
+                <div class="metrics-grid" style="grid-template-columns:1fr 1fr;">
+                  ${Object.entries(state.stats).map(([key, value]) => metricTemplate(key, value)).join("")}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPlay() {
+      const event = currentEvent();
+      const progress = Math.round((state.eventIndex / EVENTS.length) * 100);
+      return `
+        <div class="shell">
+          <div class="screen">
+            <div class="play-layout">
+              <div class="hud">
+                <div class="hud-card card glass">
+                  <div>
+                    <div class="muted" style="font-size:12px; text-transform:uppercase; letter-spacing:0.08em;">Life Stage</div>
+                    <div class="hud-value">${event.stage}</div>
+                  </div>
+                  <div class="pill">Age ${event.age}</div>
+                </div>
+                <div class="hud-card card glass">
+                  <div>
+                    <div class="muted" style="font-size:12px; text-transform:uppercase; letter-spacing:0.08em;">Progress</div>
+                    <div class="hud-value">${state.eventIndex + 1} / ${EVENTS.length}</div>
+                  </div>
+                  <div style="width:44%;">
+                    <div class="bar-shell"><div class="bar-fill" style="width:${progress}%"></div></div>
+                  </div>
+                </div>
+                <div class="hud-card card glass">
+                  <div>
+                    <div class="muted" style="font-size:12px; text-transform:uppercase; letter-spacing:0.08em;">Spawn Band</div>
+                    <div class="hud-value" style="font-size:22px;">${state.player.band}</div>
+                  </div>
+                  <div class="pill">${state.player.place}</div>
+                </div>
+              </div>
+              <div class="main-grid">
+                <div class="column">
+                  <div class="panel card glass">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                      <h3 style="font-size:18px;">World map</h3>
+                      <span class="tag">Current zone: ${LANDMARKS[event.location].label}</span>
+                    </div>
+                    ${mapTemplate(event.location)}
+                  </div>
+                </div>
+                <div class="column">
+                  <div class="panel card glass" style="flex:1.05;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                      <h3 style="font-size:18px;">Character sheet</h3>
+                      <span class="tag">${state.player.name}</span>
+                    </div>
+                    <div class="metrics-grid">${Object.entries(state.stats).map(([key, value]) => metricTemplate(key, value)).join("")}</div>
+                  </div>
+                  <div class="panel card glass" style="flex:0.95;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                      <h3 style="font-size:18px;">Story log</h3>
+                      ${state.lastResult ? `<span class="tag">${state.lastResult.success ? "Last move landed" : "Last move failed"}</span>` : `<span class="tag">No move yet</span>`}
+                    </div>
+                    <div class="history-list">${state.history.map(item => `<div class="history-item"><small>Age ${item.age} • ${item.title}</small>${item.text}</div>`).join("")}</div>
+                  </div>
+                </div>
+                <div class="column">
+                  <div class="decision-card card glass">
+                    <div class="decision-header">
+                      <div>
+                        <div class="stage-tag">${event.stage}</div>
+                        <h2 style="font-size:28px; margin-top:10px; letter-spacing:-0.04em;">${event.title}</h2>
+                        <p class="muted" style="font-size:14px; line-height:1.55; margin-top:8px;">${event.text}</p>
+                      </div>
+                    </div>
+                    <div class="npc-box">${event.npc}</div>
+                    <div class="progress-wrap">
+                      <div class="bar-label"><span>Life arc completion</span><strong>${progress}%</strong></div>
+                      <div class="bar-shell"><div class="bar-fill" style="width:${progress}%"></div></div>
+                    </div>
+                    <div class="options">
+                      ${event.options.map((option, idx) => optionTemplate(option, idx)).join("")}
+                    </div>
+                    <div class="muted" style="font-size:12px; line-height:1.5;">Every option shows visible impact. Some are locked by your society settings, earlier decisions, or your current stats. Success odds also shift with your build.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderEnding() {
+      const end = state.ending;
+      return `
+        <div class="shell">
+          <div class="screen">
+            <div class="ending-layout">
+              <div class="ending-left card glass">
+                <div class="eyebrow">Endgame • Rawls Reflection</div>
+                <div class="ending-title">${end.title}</div>
+                <p class="lead" style="font-size:17px; max-width:58ch;">${end.text}</p>
+                <div class="ending-grid">
+                  <div class="info-chip"><small>Final wealth</small><strong>${money(end.wealth)}</strong></div>
+                  <div class="info-chip"><small>Society score</small><strong>${end.societyScore}</strong></div>
+                  <div class="info-chip"><small>Spawn band</small><strong>${end.reroll}</strong></div>
+                  <div class="info-chip"><small>Player</small><strong>${state.player.name}</strong></div>
+                </div>
+                <div class="reflection">
+                  <strong>Rawls reflection:</strong><br /><br />
+                  ${end.rawlsVerdict}<br /><br />
+                  The whole point of the veil of ignorance is that you choose institutions before you know whether you will be rich or poor, healthy or sick, connected or isolated. Your run forced you to live inside the rules you created.
+                </div>
+                <div class="footer-actions">
+                  <button class="btn btn-primary" data-action="restart">Play Again</button>
+                  <button class="btn btn-secondary" data-action="back-builder">Rebuild Society</button>
+                </div>
+              </div>
+              <div class="preview-panel card glass">
+                <div class="map-card card" style="padding:10px; min-height:300px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                    <h3 style="font-size:18px;">Your final map</h3>
+                    <span class="tag">Full life completed</span>
+                  </div>
+                  ${mapTemplate("park")}
+                </div>
+                <div class="list">
+                  <div><strong>Question 1:</strong> Would you accept this exact society if the game re-randomized your birth tomorrow?</div>
+                  <div><strong>Question 2:</strong> Did the least advantaged in your world get a meaningful floor, or only survival?</div>
+                  <div><strong>Question 3:</strong> Which setting changed outcomes most: taxes, welfare, housing, education, healthcare, labor, or policing?</div>
+                  <div><strong>Question 4:</strong> Which of your late-game advantages came from merit, and which came from your initial spawn and system design?</div>
+                </div>
+                <div class="metrics-grid" style="grid-template-columns:1fr 1fr;">${Object.entries(state.stats).map(([key, value]) => metricTemplate(key, value)).join("")}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function render() {
+      if (state.scene === "title") app.innerHTML = renderTitle();
+      if (state.scene === "builder") app.innerHTML = renderBuilder();
+      if (state.scene === "birth") app.innerHTML = renderBirth();
+      if (state.scene === "play") app.innerHTML = renderPlay();
+      if (state.scene === "ending") app.innerHTML = renderEnding();
+    }
+
+    app.addEventListener("click", (event) => {
+      const target = event.target.closest("[data-action]");
+      if (!target) return;
+      const action = target.dataset.action;
+      if (action === "goto-builder") {
+        state.scene = "builder";
+        render();
+      }
+      if (action === "back-title") {
+        state.scene = "title";
+        render();
+      }
+      if (action === "back-builder") {
+        state.scene = "builder";
+        render();
+      }
+      if (action === "set-env") {
+        state.env[target.dataset.key] = Number(target.dataset.value);
+        render();
+      }
+      if (action === "quick-random") {
+        state.env = {
+          tax: Math.floor(Math.random() * 10),
+          education: Math.floor(Math.random() * 5),
+          healthcare: Math.floor(Math.random() * 5),
+          welfare: Math.floor(Math.random() * 4),
+          housing: Math.floor(Math.random() * 5),
+          labor: Math.floor(Math.random() * 5),
+          policing: Math.floor(Math.random() * 5)
+        };
+        state.scene = "builder";
+        render();
+      }
+      if (action === "lock-world") {
+        spawnPlayer();
+        state.scene = "birth";
+        render();
+      }
+      if (action === "begin-life") {
+        state.scene = "play";
+        render();
+      }
+      if (action === "choose") {
+        chooseOption(Number(target.dataset.index));
+      }
+      if (action === "restart") {
+        resetGame();
+      }
+    });
+
+    render();
+  </script>
 </body>
 </html>
