@@ -1,473 +1,351 @@
-index.html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Veil of Ignorance RPG</title>
+  <title>Veil of Ignorance — Philosophy RPG</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #08111f;
-      --panel: rgba(13, 24, 43, 0.94);
-      --panel-2: rgba(19, 35, 63, 0.94);
-      --line: rgba(133, 164, 255, 0.18);
-      --text: #f2f7ff;
-      --muted: #9fb5df;
-      --accent: #88a9ff;
-      --accent-2: #68f0c1;
-      --danger: #ff7a9f;
-      --gold: #ffd76a;
-      --shadow: 0 22px 60px rgba(0, 0, 0, 0.35);
-      --radius: 22px;
+      --bg: #04080f;
+      --panel: rgba(5, 11, 24, 0.98);
+      --panel-2: rgba(8, 18, 36, 0.98);
+      --line: rgba(0, 229, 255, 0.1);
+      --line-b: rgba(0, 229, 255, 0.22);
+      --text: #ddeeff;
+      --muted: #5a7a9a;
+      --accent: #00e5ff;
+      --accent-2: #00ffaa;
+      --gold: #ffd700;
+      --danger: #ff3355;
+      --purple: #aa66ff;
+      --glow: 0 0 12px rgba(0,229,255,0.55), 0 0 28px rgba(0,229,255,0.2);
+      --glow-sm: 0 0 7px rgba(0,229,255,0.4);
+      --shadow: 0 0 0 1px rgba(0,229,255,0.07), 0 24px 60px rgba(0,0,0,0.7);
+      --radius: 6px;
+      --radius-lg: 12px;
     }
 
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(115, 139, 255, 0.18), transparent 28%),
-        radial-gradient(circle at top right, rgba(45, 211, 191, 0.14), transparent 24%),
-        linear-gradient(180deg, #09111f 0%, #0b1323 46%, #071019 100%);
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: 'Exo 2', 'Inter', sans-serif;
+      background: var(--bg);
       color: var(--text);
     }
 
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-      background-size: 22px 22px;
-      pointer-events: none;
-      opacity: 0.35;
+    /* Scanlines */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.07) 3px, rgba(0,0,0,0.07) 4px);
+      pointer-events: none; z-index: 9998;
     }
 
-    #app {
-      width: 100%;
-      height: 100%;
-      padding: 14px;
+    /* Grid bg */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px);
+      background-size: 44px 44px;
+      pointer-events: none;
     }
+
+    #app { width: 100%; height: 100%; padding: 10px; position: relative; z-index: 1; }
 
     .shell {
-      width: 100%;
-      height: calc(100vh - 28px);
-      border: 1px solid var(--line);
-      border-radius: 28px;
-      background: rgba(7, 14, 27, 0.72);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      position: relative;
+      width: 100%; height: calc(100vh - 20px);
+      border: 1px solid var(--line-b);
+      border-radius: 14px;
+      background: radial-gradient(ellipse at top, rgba(0,40,60,0.35), transparent 55%), rgba(4,8,16,0.82);
+      box-shadow: var(--shadow), inset 0 0 80px rgba(0,229,255,0.02);
+      overflow: hidden; position: relative;
     }
 
-    .shell::after {
-      content: "";
+    .shell::before {
+      content: '';
       position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, rgba(255,255,255,0.05), transparent 20%, transparent 80%, rgba(255,255,255,0.03));
-      pointer-events: none;
+      top: 0; left: 8%; right: 8%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      box-shadow: 0 0 10px var(--accent);
     }
 
     .screen {
-      position: absolute;
-      inset: 0;
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
+      position: absolute; inset: 0;
+      padding: 12px;
+      display: flex; flex-direction: column; gap: 10px;
     }
 
+    /* Cards */
     .card {
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+      border-radius: var(--radius-lg);
+      position: relative; overflow: hidden;
     }
 
-    .glass {
-      background: linear-gradient(180deg, rgba(17, 31, 56, 0.94), rgba(11, 20, 38, 0.94));
-    }
-
-    .title-screen {
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 14px;
-      height: 100%;
-    }
-
-    .hero-panel {
-      padding: 28px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      position: relative;
-      overflow: hidden;
-      min-height: 0;
-    }
-
-    .hero-panel::before {
-      content: "";
+    .card::before {
+      content: '';
       position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(circle at 18% 24%, rgba(114, 141, 255, 0.22), transparent 30%),
-        radial-gradient(circle at 80% 20%, rgba(64, 238, 196, 0.16), transparent 24%),
-        linear-gradient(180deg, rgba(255,255,255,0.03), transparent 40%);
-      pointer-events: none;
+      top: 0; left: 20%; right: 20%; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,229,255,0.25), transparent);
     }
 
+    .glass { background: linear-gradient(180deg, var(--panel-2), var(--panel)); }
+
+    /* Typography */
+    h1, h2, h3, h4 { font-family: 'Orbitron', monospace; }
+    h1 { font-size: clamp(28px, 3.5vw, 54px); line-height: 0.92; letter-spacing: -0.02em; }
+    h2 { font-size: clamp(17px, 2vw, 28px); letter-spacing: -0.02em; }
+    h3 { font-size: clamp(12px, 1.3vw, 17px); }
+    p { line-height: 1.5; }
+    .muted { color: var(--muted); }
+
+    /* Eyebrow */
     .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(136, 169, 255, 0.12);
-      color: #d6e2ff;
-      border: 1px solid rgba(136, 169, 255, 0.18);
-      font-size: 12px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 5px 11px; border-radius: 2px;
+      background: rgba(0,229,255,0.07);
+      color: var(--accent);
+      border: 1px solid rgba(0,229,255,0.18);
+      border-left: 2px solid var(--accent);
+      font-family: 'Orbitron', monospace;
+      font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
       width: fit-content;
     }
 
-    h1, h2, h3, h4, p { margin: 0; }
-
-    h1 {
-      font-size: clamp(34px, 4vw, 58px);
-      line-height: 0.95;
-      letter-spacing: -0.04em;
-      max-width: 10ch;
-    }
-
-    .lead {
-      color: #dce7ff;
-      font-size: 18px;
-      line-height: 1.45;
-      max-width: 55ch;
-    }
-
-    .muted { color: var(--muted); }
-
-    .title-bottom {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .mini-card {
-      padding: 14px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: rgba(11, 20, 37, 0.72);
-    }
-
-    .title-actions {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 18px;
-      position: relative;
-      z-index: 1;
-    }
-
-    button {
-      border: none;
-      cursor: pointer;
-      color: var(--text);
-      transition: transform 0.15s ease, opacity 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-      font: inherit;
-    }
+    /* Buttons */
+    button { border: none; cursor: pointer; color: var(--text); font: inherit; transition: all 0.15s ease; }
 
     .btn {
-      min-height: 46px;
-      padding: 12px 16px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      font-weight: 700;
+      min-height: 38px; padding: 9px 18px;
+      border-radius: var(--radius);
+      font-family: 'Orbitron', monospace;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      position: relative; overflow: hidden;
     }
 
-    .btn:hover { transform: translateY(-1px); }
+    .btn:hover { transform: translateY(-2px); }
+    .btn:active { transform: translateY(0) scale(0.98); }
 
     .btn-primary {
-      background: linear-gradient(135deg, rgba(136,169,255,0.96), rgba(96,227,201,0.82));
-      color: #07111d;
-      border: none;
+      background: rgba(0,229,255,0.1);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      box-shadow: var(--glow-sm), inset 0 0 20px rgba(0,229,255,0.04);
+    }
+
+    .btn-primary:hover {
+      background: rgba(0,229,255,0.18);
+      box-shadow: var(--glow);
     }
 
     .btn-secondary {
-      background: rgba(136, 169, 255, 0.14);
-      color: #dce7ff;
-      border: 1px solid rgba(136, 169, 255, 0.26);
-    }
-
-    .preview-panel {
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      min-height: 0;
-    }
-
-    .pill-row, .tag-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .pill, .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 11px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.06);
-      font-size: 12px;
-      color: #d3e1ff;
-    }
-
-    .title-metrics {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    .score-box {
-      padding: 14px;
-      border-radius: 18px;
-      background: rgba(9, 18, 34, 0.85);
-      border: 1px solid var(--line);
-    }
-
-    .big-score {
-      font-size: 42px;
-      letter-spacing: -0.05em;
-      margin-top: 6px;
-      font-weight: 800;
-    }
-
-    .builder-layout {
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 14px;
-      height: 100%;
-      min-height: 0;
-    }
-
-    .builder-left {
-      display: grid;
-      grid-template-rows: auto 1fr;
-      gap: 14px;
-      min-height: 0;
-    }
-
-    .builder-header {
-      padding: 18px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 16px;
-    }
-
-    .builder-header h2 { font-size: 30px; letter-spacing: -0.03em; }
-
-    .subtle-note {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.45;
-      max-width: 46ch;
-    }
-
-    .world-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      overflow: auto;
-      padding-right: 4px;
-      min-height: 0;
-    }
-
-    .config-card {
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      min-height: 132px;
-    }
-
-    .config-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .config-title {
-      font-size: 16px;
-      font-weight: 700;
-    }
-
-    .config-value {
-      font-size: 12px;
-      color: #d4e2ff;
-      padding: 7px 10px;
-      border-radius: 999px;
-      background: rgba(136, 169, 255, 0.16);
-      border: 1px solid rgba(136, 169, 255, 0.22);
-    }
-
-    .option-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .toggle {
-      padding: 8px 10px;
-      border-radius: 12px;
       background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: #dce7ff;
-      font-size: 12px;
-      min-height: 38px;
-    }
-
-    .toggle.active {
-      background: rgba(136, 169, 255, 0.2);
-      border-color: rgba(136, 169, 255, 0.45);
-      color: white;
-      box-shadow: 0 0 0 1px rgba(136, 169, 255, 0.12) inset;
-    }
-
-    .config-desc {
+      border: 1px solid rgba(255,255,255,0.1);
       color: var(--muted);
-      font-size: 13px;
-      line-height: 1.42;
     }
 
-    .builder-right {
-      display: grid;
-      grid-template-rows: auto auto 1fr auto;
-      gap: 14px;
-      min-height: 0;
+    .btn-secondary:hover { border-color: rgba(255,255,255,0.22); color: var(--text); }
+
+    /* Pills / Tags */
+    .pill, .tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 9px; border-radius: 2px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      font-size: 10px; color: var(--muted);
     }
 
-    .preview-stack {
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      min-height: 0;
-    }
+    .pill-row, .tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
 
-    .bar-block { display: flex; flex-direction: column; gap: 8px; }
+    /* Bars */
+    .bar-block { display: flex; flex-direction: column; gap: 5px; }
 
     .bar-label {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      color: #dbe6ff;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 11px; color: var(--text);
     }
 
     .bar-shell {
-      width: 100%;
-      height: 12px;
-      border-radius: 999px;
+      height: 7px; border-radius: 2px;
       background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.04);
       overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.06);
     }
 
     .bar-fill {
-      height: 100%;
-      border-radius: 999px;
-      background: linear-gradient(90deg, rgba(136,169,255,0.9), rgba(104,240,193,0.95));
-      width: 0%;
-      transition: width 360ms ease;
+      height: 100%; border-radius: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 8px rgba(0,229,255,0.5);
+      width: 0%; transition: width 400ms ease;
     }
 
-    .map-card {
-      padding: 14px;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+    /* ========== TITLE SCREEN ========== */
+    .title-screen {
+      display: grid; grid-template-columns: 1.35fr 0.65fr; gap: 12px; height: 100%;
     }
 
-    .map {
-      position: relative;
-      flex: 1;
-      min-height: 248px;
-      border-radius: 22px;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.08);
+    .hero-panel {
+      padding: 22px 26px;
+      display: flex; flex-direction: column; justify-content: space-between;
+      position: relative; overflow: hidden; min-height: 0;
+    }
+
+    .hero-panel::after {
+      content: '';
+      position: absolute; inset: 0;
       background:
-        linear-gradient(180deg, #3b6be8 0%, #7ccfff 27%, #8fe2b9 27%, #7bc56a 54%, #4a814c 54%, #2d4e3a 100%);
-      box-shadow: inset 0 20px 40px rgba(255,255,255,0.08), inset 0 -18px 22px rgba(0,0,0,0.18);
-    }
-
-    .map::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
-      background-size: 18px 18px;
-      opacity: 0.3;
+        radial-gradient(circle at 15% 25%, rgba(0,229,255,0.06), transparent 35%),
+        radial-gradient(circle at 82% 68%, rgba(170,102,255,0.06), transparent 35%);
       pointer-events: none;
     }
 
-    .road {
-      position: absolute;
-      background: rgba(33, 42, 56, 0.7);
-      border: 1px solid rgba(255,255,255,0.08);
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);
+    .hero-top { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 12px; }
+
+    .game-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(30px, 4vw, 58px);
+      font-weight: 900;
+      line-height: 0.9; letter-spacing: -0.03em;
+      color: var(--text);
+      animation: glitch 9s infinite;
     }
 
-    .road-h { height: 18px; border-radius: 9px; }
-    .road-v { width: 18px; border-radius: 9px; }
+    .game-title .sub {
+      display: block;
+      background: linear-gradient(120deg, var(--accent), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: 0.55em;
+      letter-spacing: 0.04em;
+      margin-top: 4px;
+    }
+
+    @keyframes glitch {
+      0%, 94%, 100% { transform: none; }
+      95% { transform: translateX(-3px) skewX(3deg); filter: hue-rotate(10deg); }
+      96% { transform: translateX(3px) skewX(-2deg); }
+      97% { transform: none; filter: none; }
+      98% { transform: translateX(-2px); }
+    }
+
+    .lead { color: #9ab8cc; font-size: 14px; line-height: 1.6; max-width: 56ch; }
+
+    .title-bottom {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+      position: relative; z-index: 1;
+    }
+
+    .mini-card {
+      padding: 12px; border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: rgba(0,229,255,0.025);
+    }
+
+    .mini-card-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 5px;
+    }
+
+    .title-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; position: relative; z-index: 1; }
+
+    .preview-panel { padding: 12px; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+
+    .score-box {
+      padding: 12px; border-radius: var(--radius);
+      background: rgba(0,0,0,0.35);
+      border: 1px solid var(--line);
+    }
+
+    .score-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .big-score {
+      font-family: 'Orbitron', monospace;
+      font-size: 44px; font-weight: 900;
+      letter-spacing: -0.05em;
+      color: var(--accent);
+      text-shadow: var(--glow);
+      margin-top: 2px;
+    }
+
+    .title-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .map-card { padding: 10px; min-height: 0; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+
+    /* ========== MAP ========== */
+    .map {
+      position: relative; flex: 1; min-height: 160px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid rgba(0,229,255,0.15);
+      background:
+        linear-gradient(180deg, #1a3a6e 0%, #4a8adf 22%, #68b4c8 22%, #3d9e6f 48%, #2d6644 48%, #1a3d2a 100%);
+    }
+
+    .map::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.06) 1px, transparent 1px);
+      background-size: 18px 18px;
+      pointer-events: none;
+    }
+
+    .map::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center, transparent 45%, rgba(4,8,16,0.55) 100%);
+      pointer-events: none;
+    }
+
+    .road { position: absolute; background: rgba(14,22,38,0.88); }
+    .road-h { height: 14px; }
+    .road-v { width: 14px; }
 
     .building {
       position: absolute;
-      width: 74px;
-      padding: 10px 8px;
-      border-radius: 18px;
-      border: 1px solid rgba(9, 18, 28, 0.18);
-      background: rgba(244, 249, 255, 0.92);
-      color: #07111d;
+      width: 62px; padding: 7px 5px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(0,229,255,0.25);
+      background: rgba(4,10,22,0.9);
+      color: var(--accent);
       text-align: center;
-      font-size: 11px;
-      line-height: 1.15;
-      box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+      font-size: 9px; line-height: 1.2;
+      box-shadow: 0 0 8px rgba(0,229,255,0.08);
       transform: translate(-50%, -50%);
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 600;
+      z-index: 2;
     }
 
-    .building strong { display: block; font-size: 16px; margin-bottom: 4px; }
-    .building.active { outline: 3px solid rgba(255, 215, 106, 0.8); }
+    .building strong { display: block; font-size: 13px; margin-bottom: 2px; }
+
+    .building.active {
+      border-color: var(--gold);
+      color: var(--gold);
+      box-shadow: 0 0 14px rgba(255,215,0,0.4);
+    }
 
     .hero {
       position: absolute;
       transform: translate(-50%, -50%);
       transition: left 420ms ease, top 420ms ease;
-      z-index: 2;
+      z-index: 4;
       animation: bob 1.4s infinite ease-in-out;
-      filter: drop-shadow(0 10px 12px rgba(0,0,0,0.28));
+      filter: drop-shadow(0 0 8px rgba(0,229,255,0.7));
     }
 
     @keyframes bob {
@@ -477,338 +355,380 @@ index.html
 
     .pixel {
       display: grid;
-      grid-template-columns: repeat(6, 8px);
-      grid-template-rows: repeat(7, 8px);
-      gap: 1px;
-      padding: 5px;
-      border-radius: 14px;
-      background: rgba(9, 18, 34, 0.3);
-      backdrop-filter: blur(3px);
+      grid-template-columns: repeat(6, 7px);
+      grid-template-rows: repeat(7, 7px);
+      gap: 1px; padding: 4px;
+      border-radius: var(--radius);
+      background: rgba(0,229,255,0.08);
+      border: 1px solid rgba(0,229,255,0.22);
     }
 
-    .px { width: 8px; height: 8px; background: transparent; }
-    .hair { background: #162033; }
-    .skin { background: #f2c18b; }
-    .shirt { background: #6d84ff; }
-    .pants { background: #26334e; }
-    .shoe { background: #111821; }
-    .spark { background: #ffd76a; }
+    .px { width: 7px; height: 7px; background: transparent; }
+    .hair { background: #00e5ff; }
+    .skin { background: #f0c090; }
+    .shirt { background: #aa66ff; }
+    .pants { background: #1a2840; }
+    .shoe { background: #060c18; }
+    .spark { background: #ffd700; }
 
-    .birth-layout, .ending-layout {
-      display: grid;
-      grid-template-columns: 1fr 0.9fr;
-      gap: 14px;
-      height: 100%;
-      min-height: 0;
+    /* ========== BUILDER ========== */
+    .builder-layout {
+      display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 12px;
+      height: 100%; min-height: 0;
     }
 
-    .birth-left, .ending-left {
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      min-height: 0;
+    .builder-left {
+      display: grid; grid-template-rows: auto 1fr; gap: 12px; min-height: 0;
     }
 
-    .birth-name {
-      font-size: 40px;
-      letter-spacing: -0.05em;
-      line-height: 0.95;
+    .builder-header {
+      padding: 14px 18px;
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 14px;
     }
 
-    .birth-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+    .subtle-note { font-size: 11px; color: var(--muted); line-height: 1.45; max-width: 50ch; margin-top: 5px; }
+
+    .world-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+      overflow: auto; padding-right: 4px; min-height: 0;
     }
 
-    .info-chip {
-      padding: 13px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.07);
+    .config-card {
+      padding: 13px; display: flex; flex-direction: column; gap: 9px; min-height: 110px;
     }
 
-    .info-chip small { color: var(--muted); display: block; margin-bottom: 6px; }
+    .config-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 
-    .play-layout {
-      display: grid;
-      grid-template-rows: auto 1fr;
-      gap: 12px;
-      height: 100%;
-      min-height: 0;
+    .config-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
     }
 
-    .hud {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr 1fr;
-      gap: 12px;
-    }
-
-    .hud-card {
-      padding: 14px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      min-height: 0;
-    }
-
-    .hud-value {
-      font-size: 26px;
-      letter-spacing: -0.04em;
-      font-weight: 800;
-    }
-
-    .main-grid {
-      display: grid;
-      grid-template-columns: 0.95fr 0.9fr 1.15fr;
-      gap: 12px;
-      min-height: 0;
-      height: 100%;
-    }
-
-    .column {
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .panel {
-      padding: 14px;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      overflow: hidden;
-    }
-
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      overflow: auto;
-      padding-right: 4px;
-      min-height: 0;
-    }
-
-    .metric {
-      padding: 12px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .metric-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      align-items: center;
-      font-size: 13px;
-      color: #d8e4ff;
-    }
-
-    .metric strong {
-      font-size: 18px;
-      letter-spacing: -0.03em;
-      color: white;
-    }
-
-    .history-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      overflow: auto;
-      padding-right: 4px;
-      min-height: 0;
-    }
-
-    .history-item {
-      padding: 12px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.05);
-      font-size: 13px;
-      line-height: 1.45;
-      color: #d7e3ff;
-    }
-
-    .history-item small {
-      display: block;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-
-    .decision-card {
-      padding: 16px;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      overflow: hidden;
-    }
-
-    .decision-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 10px;
-    }
-
-    .stage-tag {
-      padding: 7px 10px;
-      border-radius: 999px;
-      background: rgba(104, 240, 193, 0.12);
-      color: #d7fff3;
-      border: 1px solid rgba(104, 240, 193, 0.2);
-      font-size: 12px;
-    }
-
-    .npc-box {
-      padding: 12px 13px;
-      border-radius: 16px;
-      background: rgba(136, 169, 255, 0.08);
-      border: 1px solid rgba(136, 169, 255, 0.14);
-      color: #dce7ff;
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    .options {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      overflow: auto;
-      padding-right: 4px;
-      min-height: 0;
-    }
-
-    .option {
-      padding: 13px;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.04);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      min-height: 188px;
-      text-align: left;
-    }
-
-    .option:hover { border-color: rgba(136,169,255,0.35); }
-    .option.locked {
-      opacity: 0.5;
-      cursor: not-allowed;
-      border-style: dashed;
-    }
-
-    .option-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 10px;
-    }
-
-    .option-title {
-      font-size: 15px;
-      font-weight: 800;
-      line-height: 1.25;
-      color: white;
-    }
-
-    .chance {
-      padding: 7px 9px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.06);
-      font-size: 11px;
-      color: #dbe6ff;
+    .config-value {
+      font-size: 10px; color: var(--accent);
+      padding: 4px 8px; border-radius: 2px;
+      background: rgba(0,229,255,0.1);
+      border: 1px solid rgba(0,229,255,0.22);
       white-space: nowrap;
     }
 
-    .impact-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: auto;
+    .option-row { display: flex; flex-wrap: wrap; gap: 5px; }
+
+    .toggle {
+      padding: 5px 7px; border-radius: 2px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      color: var(--muted);
+      font-size: 10px; min-height: 28px;
+      font-family: 'Orbitron', monospace;
     }
+
+    .toggle.active {
+      background: rgba(0,229,255,0.14);
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: 0 0 7px rgba(0,229,255,0.2);
+    }
+
+    .toggle:hover:not(.active) { border-color: rgba(255,255,255,0.18); color: var(--text); }
+
+    .config-desc { color: var(--muted); font-size: 11px; line-height: 1.4; }
+
+    .builder-right {
+      display: grid; grid-template-rows: auto auto 1fr auto; gap: 12px; min-height: 0;
+    }
+
+    .preview-stack { padding: 14px; display: flex; flex-direction: column; gap: 9px; }
+
+    /* ========== BIRTH ========== */
+    .birth-layout, .ending-layout {
+      display: grid; grid-template-columns: 1fr 0.85fr; gap: 12px;
+      height: 100%; min-height: 0;
+    }
+
+    .birth-left, .ending-left {
+      padding: 18px; display: flex; flex-direction: column; gap: 11px; min-height: 0;
+    }
+
+    .birth-name {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(26px, 3.8vw, 50px);
+      letter-spacing: -0.03em; line-height: 0.92;
+      color: var(--accent);
+      text-shadow: var(--glow);
+    }
+
+    .birth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .info-chip {
+      padding: 9px 11px; border-radius: var(--radius);
+      background: rgba(0,229,255,0.04);
+      border: 1px solid rgba(0,229,255,0.1);
+    }
+
+    .info-chip small {
+      display: block;
+      font-family: 'Orbitron', monospace;
+      font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 4px;
+    }
+
+    .info-chip strong { font-size: 13px; color: var(--text); }
+
+    /* ========== PLAY ========== */
+    .play-layout {
+      display: grid; grid-template-rows: auto 1fr; gap: 10px;
+      height: 100%; min-height: 0;
+    }
+
+    .hud {
+      display: grid; grid-template-columns: 1.1fr 0.9fr 1fr; gap: 10px;
+    }
+
+    .hud-card {
+      padding: 9px 14px;
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    }
+
+    .hud-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 2px;
+    }
+
+    .hud-value {
+      font-family: 'Orbitron', monospace;
+      font-size: 17px; font-weight: 700; color: var(--text);
+    }
+
+    .main-grid {
+      display: grid; grid-template-columns: 0.9fr 0.85fr 1.25fr; gap: 10px;
+      min-height: 0; height: 100%;
+    }
+
+    .column { min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+
+    .panel {
+      padding: 11px; min-height: 0;
+      display: flex; flex-direction: column; gap: 9px; overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* Metrics */
+    .metrics-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 5px;
+      overflow: auto; padding-right: 2px; min-height: 0;
+    }
+
+    .metric {
+      padding: 7px 9px; border-radius: var(--radius);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      display: flex; flex-direction: column; gap: 5px;
+    }
+
+    .metric-head {
+      display: flex; justify-content: space-between; align-items: center; gap: 5px;
+      font-size: 10px; color: var(--muted);
+    }
+
+    .metric strong {
+      font-size: 13px; font-weight: 700; color: var(--text);
+      font-family: 'Orbitron', monospace;
+    }
+
+    /* History */
+    .history-list {
+      display: flex; flex-direction: column; gap: 5px;
+      overflow: auto; padding-right: 2px; min-height: 0;
+    }
+
+    .history-item {
+      padding: 8px 9px; border-radius: var(--radius);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-left: 2px solid rgba(0,229,255,0.2);
+      font-size: 11px; line-height: 1.4; color: var(--text);
+    }
+
+    .history-item small {
+      display: block; color: var(--muted); margin-bottom: 2px;
+      font-family: 'Orbitron', monospace; font-size: 8px; letter-spacing: 0.08em;
+    }
+
+    /* Decision */
+    .decision-card {
+      padding: 13px; min-height: 0;
+      display: flex; flex-direction: column; gap: 9px; overflow: hidden;
+    }
+
+    .decision-header { flex-shrink: 0; }
+
+    .stage-tag {
+      display: inline-block; padding: 3px 8px; border-radius: 2px;
+      background: rgba(0,255,170,0.08);
+      color: var(--accent-2);
+      border: 1px solid rgba(0,255,170,0.18);
+      font-family: 'Orbitron', monospace;
+      font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .decision-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(14px, 1.8vw, 22px);
+      letter-spacing: -0.02em; line-height: 1.1; color: var(--text);
+    }
+
+    .decision-text { font-size: 11px; line-height: 1.5; color: var(--muted); margin-top: 3px; }
+
+    .npc-box {
+      padding: 9px 11px; border-radius: var(--radius);
+      background: rgba(170,102,255,0.06);
+      border: 1px solid rgba(170,102,255,0.18);
+      border-left: 2px solid var(--purple);
+      color: #d4c0ff;
+      font-size: 11px; line-height: 1.45;
+      font-style: italic;
+      flex-shrink: 0;
+    }
+
+    .progress-wrap { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
+
+    .options {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 7px;
+      overflow: auto; padding-right: 2px; min-height: 0; flex: 1;
+    }
+
+    .option {
+      padding: 10px; border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.025);
+      display: flex; flex-direction: column; gap: 7px;
+      min-height: 115px; text-align: left; position: relative;
+      transition: all 0.18s ease;
+    }
+
+    .option:hover:not(.locked) {
+      border-color: rgba(0,229,255,0.32);
+      background: rgba(0,229,255,0.04);
+      box-shadow: 0 0 14px rgba(0,229,255,0.07);
+      transform: translateY(-1px);
+    }
+
+    .option.locked { opacity: 0.42; cursor: not-allowed; border-style: dashed; }
+
+    .option-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 7px; }
+
+    .option-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 11px; font-weight: 700; line-height: 1.3; color: var(--text);
+    }
+
+    .chance {
+      padding: 3px 6px; border-radius: 2px;
+      background: rgba(255,215,0,0.08);
+      border: 1px solid rgba(255,215,0,0.18);
+      font-size: 9px; color: var(--gold);
+      white-space: nowrap;
+      font-family: 'Orbitron', monospace;
+    }
+
+    .option-desc { font-size: 10px; line-height: 1.4; color: var(--muted); }
+
+    .impact-row { display: flex; flex-wrap: wrap; gap: 3px; margin-top: auto; }
 
     .impact {
-      padding: 6px 8px;
-      border-radius: 999px;
-      font-size: 11px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.06);
-      color: #dbe6ff;
-    }
-
-    .impact.up { color: #c8fff0; border-color: rgba(104, 240, 193, 0.22); background: rgba(104, 240, 193, 0.12); }
-    .impact.down { color: #ffd3df; border-color: rgba(255, 122, 159, 0.24); background: rgba(255, 122, 159, 0.12); }
-
-    .lock-note {
-      margin-top: auto;
-      font-size: 12px;
-      color: #ffd6df;
-      display: flex;
-      gap: 8px;
-      align-items: flex-start;
-      line-height: 1.35;
-    }
-
-    .progress-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .ending-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    .ending-title {
-      font-size: 42px;
-      letter-spacing: -0.05em;
-      line-height: 0.95;
-      max-width: 12ch;
-    }
-
-    .reflection {
-      padding: 16px;
-      border-radius: 18px;
-      background: rgba(136, 169, 255, 0.08);
-      border: 1px solid rgba(136, 169, 255, 0.18);
-      line-height: 1.55;
-      color: #e6efff;
-    }
-
-    .list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      color: #dbe6ff;
-      font-size: 14px;
-    }
-
-    .list div {
-      padding: 12px;
-      border-radius: 14px;
+      padding: 2px 6px; border-radius: 2px;
+      font-size: 9px;
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.06);
+      color: var(--muted);
     }
 
-    .footer-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: auto;
+    .impact.up { color: var(--accent-2); border-color: rgba(0,255,170,0.18); background: rgba(0,255,170,0.07); }
+    .impact.down { color: var(--danger); border-color: rgba(255,51,85,0.18); background: rgba(255,51,85,0.07); }
+
+    .lock-note {
+      margin-top: auto; font-size: 10px; color: var(--danger);
+      display: flex; gap: 5px; align-items: flex-start; line-height: 1.35;
     }
 
+    /* ========== ENDING ========== */
+    .ending-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(22px, 3.2vw, 44px);
+      letter-spacing: -0.03em; line-height: 0.92;
+      color: var(--gold);
+      text-shadow: 0 0 28px rgba(255,215,0,0.3);
+    }
+
+    .ending-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .reflection {
+      padding: 13px 15px; border-radius: var(--radius);
+      background: rgba(170,102,255,0.06);
+      border: 1px solid rgba(170,102,255,0.18);
+      border-left: 2px solid var(--purple);
+      line-height: 1.55; color: #d4c0ff;
+      font-size: 12px;
+    }
+
+    .list { display: flex; flex-direction: column; gap: 7px; color: var(--text); font-size: 12px; }
+
+    .list div {
+      padding: 9px 11px; border-radius: var(--radius);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      line-height: 1.5;
+    }
+
+    .footer-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
+
+    /* ========== TOAST ========== */
+    #toast-container {
+      position: fixed; top: 18px; right: 18px;
+      z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast {
+      padding: 12px 16px; border-radius: var(--radius);
+      background: rgba(4,10,22,0.97);
+      border: 1px solid;
+      font-family: 'Orbitron', monospace;
+      font-size: 10px; line-height: 1.6;
+      transform: translateX(120%);
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease;
+      opacity: 0; min-width: 190px; max-width: 260px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+
+    .toast.show { transform: translateX(0); opacity: 1; }
+    .toast-success { border-color: var(--accent-2); color: var(--accent-2); }
+    .toast-fail { border-color: var(--danger); color: var(--danger); }
+    .toast strong { display: block; font-size: 12px; margin-bottom: 3px; letter-spacing: 0.08em; }
+
+    /* ========== FLASH ========== */
+    .flash-overlay {
+      position: fixed; inset: 0; pointer-events: none; z-index: 9997;
+      opacity: 0; animation: flash 0.55s ease forwards;
+    }
+
+    .flash-s { background: var(--accent-2); }
+    .flash-f { background: var(--danger); }
+
+    @keyframes flash {
+      0% { opacity: 0; }
+      12% { opacity: 0.1; }
+      100% { opacity: 0; }
+    }
+
+    /* ========== RESPONSIVE ========== */
     @media (max-width: 1240px) {
       .title-screen, .builder-layout, .birth-layout, .ending-layout { grid-template-columns: 1fr; }
       .main-grid { grid-template-columns: 1fr; }
@@ -823,7 +743,79 @@ index.html
 </head>
 <body>
   <div id="app"></div>
+  <div id="toast-container"></div>
   <script>
+    /* ============================
+       SOUND ENGINE
+    ============================ */
+    const SFX = {
+      _ctx: null,
+      get ctx() {
+        if (!this._ctx) {
+          try { this._ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+        }
+        return this._ctx;
+      },
+      _tone(freq, type, vol, dur, start) {
+        const c = this.ctx; if (!c) return;
+        try {
+          const o = c.createOscillator(), g = c.createGain();
+          o.type = type; o.frequency.value = freq;
+          const t = c.currentTime + (start || 0);
+          g.gain.setValueAtTime(vol, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+          o.connect(g); g.connect(c.destination);
+          o.start(t); o.stop(t + dur + 0.01);
+        } catch(e) {}
+      },
+      click() { this._tone(700, 'square', 0.05, 0.05); },
+      transition() {
+        this._tone(330, 'sine', 0.07, 0.18);
+        this._tone(660, 'sine', 0.04, 0.12, 0.12);
+      },
+      locked() { this._tone(130, 'square', 0.08, 0.12); },
+      success() {
+        [523, 659, 784, 1047].forEach((f, i) => this._tone(f, 'square', 0.05, 0.1, i * 0.07));
+      },
+      fail() {
+        [330, 250, 185].forEach((f, i) => this._tone(f, 'sawtooth', 0.07, 0.12, i * 0.09));
+      },
+      spawn() {
+        [220, 330, 440, 550, 660, 880].forEach((f, i) => this._tone(f, 'sine', 0.05, 0.18, i * 0.055));
+      },
+      dice() {
+        for (let i = 0; i < 6; i++) {
+          this._tone(200 + Math.random() * 600, 'square', 0.04, 0.06, i * 0.06);
+        }
+      }
+    };
+
+    /* ============================
+       NOTIFICATION HELPERS
+    ============================ */
+    function showToast(success, label) {
+      const c = document.getElementById('toast-container');
+      const el = document.createElement('div');
+      el.className = `toast ${success ? 'toast-success' : 'toast-fail'}`;
+      el.innerHTML = `<strong>${success ? '✓ SUCCESS' : '✗ SETBACK'}</strong>${label}`;
+      c.appendChild(el);
+      requestAnimationFrame(() => { el.classList.add('show'); });
+      setTimeout(() => {
+        el.classList.remove('show');
+        setTimeout(() => el.remove(), 350);
+      }, 2600);
+    }
+
+    function showFlash(success) {
+      const el = document.createElement('div');
+      el.className = `flash-overlay ${success ? 'flash-s' : 'flash-f'}`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 600);
+    }
+
+    /* ============================
+       GAME DATA
+    ============================ */
     const TAX_LEVELS = [
       { label: "0% tax", desc: "Pure turbo-capitalism. Your wallet stays full, public systems do not." },
       { label: "10% tax", desc: "Minimal state. Cheap to earn, expensive to fall." },
@@ -899,38 +891,36 @@ index.html
       { place: "Medellin Vista", country: "Colombia" }
     ];
 
-    const FIRST_NAMES = ["Mika", "Ari", "Noor", "Leo", "Nia", "Sami", "Elio", "Mara", "Kian", "Lina", "Jules", "Amina"];
-    const LAST_NAMES = ["Vale", "Ortega", "Santos", "Mercer", "Sen", "Dawson", "Kim", "Rossi", "Ibrahim", "Costa", "Petrov", "Bennett"];
+    const FIRST_NAMES = ["Mika","Ari","Noor","Leo","Nia","Sami","Elio","Mara","Kian","Lina","Jules","Amina"];
+    const LAST_NAMES  = ["Vale","Ortega","Santos","Mercer","Sen","Dawson","Kim","Rossi","Ibrahim","Costa","Petrov","Bennett"];
 
     const METRICS = {
-      bank: { label: "Bank", icon: "💵", kind: "money", max: 250000 },
-      health: { label: "Health", icon: "❤️", kind: "score", max: 100 },
-      education: { label: "Education", icon: "🎓", kind: "score", max: 100 },
-      happiness: { label: "Happiness", icon: "🙂", kind: "score", max: 100 },
-      housing: { label: "Housing", icon: "🏠", kind: "score", max: 100 },
-      assets: { label: "Assets", icon: "🏦", kind: "money", max: 300000 },
-      debt: { label: "Debt", icon: "📉", kind: "money", max: 180000 },
-      social: { label: "Social", icon: "🫂", kind: "score", max: 100 },
-      stress: { label: "Stress", icon: "⚡", kind: "score", max: 100 },
-      power: { label: "Power", icon: "👑", kind: "score", max: 100 }
+      bank:      { label: "Bank",      icon: "$",   kind: "money", max: 250000 },
+      health:    { label: "Health",    icon: "HP",  kind: "score", max: 100 },
+      education: { label: "Education", icon: "EDU", kind: "score", max: 100 },
+      happiness: { label: "Happiness", icon: "JOY", kind: "score", max: 100 },
+      housing:   { label: "Housing",   icon: "HSG", kind: "score", max: 100 },
+      assets:    { label: "Assets",    icon: "AST", kind: "money", max: 300000 },
+      debt:      { label: "Debt",      icon: "DBT", kind: "money", max: 180000 },
+      social:    { label: "Social",    icon: "SOC", kind: "score", max: 100 },
+      stress:    { label: "Stress",    icon: "STR", kind: "score", max: 100 },
+      power:     { label: "Power",     icon: "PWR", kind: "score", max: 100 }
     };
 
     const LANDMARKS = {
-      home: { label: "Home", icon: "⌂", x: 17, y: 72 },
-      school: { label: "School", icon: "▤", x: 29, y: 29 },
-      clinic: { label: "Clinic", icon: "✚", x: 73, y: 28 },
-      market: { label: "Market", icon: "¤", x: 79, y: 66 },
-      office: { label: "Office", icon: "▦", x: 54, y: 41 },
-      cityhall: { label: "City Hall", icon: "⚑", x: 52, y: 74 },
-      station: { label: "Transit", icon: "⇄", x: 26, y: 54 },
-      park: { label: "Park", icon: "✿", x: 84, y: 46 }
+      home:     { label: "Home",      icon: "H",  x: 17, y: 72 },
+      school:   { label: "School",    icon: "S",  x: 29, y: 29 },
+      clinic:   { label: "Clinic",    icon: "+",  x: 73, y: 28 },
+      market:   { label: "Market",    icon: "M",  x: 79, y: 66 },
+      office:   { label: "Office",    icon: "O",  x: 54, y: 41 },
+      cityhall: { label: "City Hall", icon: "C",  x: 52, y: 74 },
+      station:  { label: "Transit",   icon: "T",  x: 26, y: 54 },
+      park:     { label: "Park",      icon: "P",  x: 84, y: 46 }
     };
 
     const EVENTS = [
       {
-        age: 6,
-        stage: "Childhood",
-        location: "school",
+        age: 6, stage: "Childhood", location: "school",
         title: "The School Lottery",
         text: "Your district opens a magnet-school track with limited seats. Ms. Ortega says this could reshape your future, but getting in is not guaranteed.",
         npc: "Ms. Ortega: 'A lucky door is still a door. Are you pushing on it?'",
@@ -942,9 +932,7 @@ index.html
         ]
       },
       {
-        age: 8,
-        stage: "Childhood",
-        location: "home",
+        age: 8, stage: "Childhood", location: "home",
         title: "Rent Week Panic",
         text: "A jump in food and rent hits your household. The lights stay on only if someone gives something up.",
         npc: "Your guardian whispers: 'We can make one smart move, not four.'",
@@ -956,9 +944,7 @@ index.html
         ]
       },
       {
-        age: 11,
-        stage: "Childhood",
-        location: "clinic",
+        age: 11, stage: "Childhood", location: "clinic",
         title: "The Bad Cough",
         text: "A lingering cough turns serious. Dr. Sen says treatment is simple, unless cost or delay turns it into a bigger problem.",
         npc: "Dr. Sen: 'Prevention is cheap. Delay is where life gets expensive.'",
@@ -970,9 +956,7 @@ index.html
         ]
       },
       {
-        age: 14,
-        stage: "Teen",
-        location: "market",
+        age: 14, stage: "Teen", location: "market",
         title: "After-School Crew",
         text: "Your friend Kiko offers three different scenes: sports, neighborhood hustle, activism club, or a coding lab with weird hours.",
         npc: "Kiko grins: 'Pick your faction. Every map has one.'",
@@ -984,9 +968,7 @@ index.html
         ]
       },
       {
-        age: 16,
-        stage: "Teen",
-        location: "school",
+        age: 16, stage: "Teen", location: "school",
         title: "National Exam Season",
         text: "One test now can open scholarships, apprenticeships, or nothing at all. Everyone suddenly acts like your life can be reduced to a percentile.",
         npc: "Ms. Ortega: 'The system loves a ranking. You decide what to do with it.'",
@@ -998,9 +980,7 @@ index.html
         ]
       },
       {
-        age: 18,
-        stage: "Teen",
-        location: "station",
+        age: 18, stage: "Teen", location: "station",
         title: "Graduation Crossroads",
         text: "Everyone wants your next move on a single line: college, apprenticeship, military service, or stay home and build money.",
         npc: "Your guardian says: 'Pick the road you can survive, not the one that looks pretty in a brochure.'",
@@ -1012,9 +992,7 @@ index.html
         ]
       },
       {
-        age: 20,
-        stage: "Young Adult",
-        location: "home",
+        age: 20, stage: "Young Adult", location: "home",
         title: "Tiny Apartment Hunt",
         text: "You want your own place. The market replies with tiny boxes, scary deposits, and a landlord named Mr. Pike who smiles like a side quest villain.",
         npc: "Mr. Pike: 'Everyone wants independence. Few can afford square footage.'",
@@ -1026,9 +1004,7 @@ index.html
         ]
       },
       {
-        age: 22,
-        stage: "Young Adult",
-        location: "office",
+        age: 22, stage: "Young Adult", location: "office",
         title: "Mentor Offer",
         text: "Director Vale notices you. One path is a polished internship, another is union organizing, another is freelancing, another is disappearing into gig work.",
         npc: "Director Vale: 'This city rewards positioning almost as much as talent.'",
@@ -1040,9 +1016,7 @@ index.html
         ]
       },
       {
-        age: 24,
-        stage: "Young Adult",
-        location: "home",
+        age: 24, stage: "Young Adult", location: "home",
         title: "Family Emergency Transfer",
         text: "A sibling needs money fast. Helping them could slow your own climb. Refusing could haunt the relationship for years.",
         npc: "Your sibling texts: 'I know your budget is real. I also know I need help.'",
@@ -1054,9 +1028,7 @@ index.html
         ]
       },
       {
-        age: 26,
-        stage: "Young Adult",
-        location: "clinic",
+        age: 26, stage: "Young Adult", location: "clinic",
         title: "Burnout or Checkup",
         text: "You have headaches, bad sleep, and the exact facial expression of someone running too many tabs. You can intervene now or keep pretending momentum is health.",
         npc: "Dr. Sen: 'Your grindset is not a medical treatment.'",
@@ -1068,9 +1040,7 @@ index.html
         ]
       },
       {
-        age: 29,
-        stage: "Adult",
-        location: "office",
+        age: 29, stage: "Adult", location: "office",
         title: "Promotion or Principle",
         text: "Your boss offers a fast promotion if you help justify cuts that hit lower-paid workers. The money is real. So is the compromise.",
         npc: "Boss Elena says: 'This is how the ladder works. Try not to stare down.'",
@@ -1082,23 +1052,19 @@ index.html
         ]
       },
       {
-        age: 32,
-        stage: "Adult",
-        location: "market",
+        age: 32, stage: "Adult", location: "market",
         title: "Housing Market Surge",
         text: "Property prices suddenly moon. Homeowners celebrate. Renters stare at listings like they are boss health bars.",
         npc: "A broker says: 'Real estate is destiny.' You are not fully convinced.",
         options: [
-          { label: "Buy a small place", desc: "Huge commitment, possible long-term win.", chance: 0.7, effects: { assets: 60000, debt: 35000, housing: 14, power: 6, bank: -8000 }, fail: { debt: 9000, bank: -2500, stress: 8 }, statReq: { bank: 5000 }, lock: "You need enough cash for a down payment." , addFlags: ["homeOwner"]},
+          { label: "Buy a small place", desc: "Huge commitment, possible long-term win.", chance: 0.7, effects: { assets: 60000, debt: 35000, housing: 14, power: 6, bank: -8000 }, fail: { debt: 9000, bank: -2500, stress: 8 }, statReq: { bank: 5000 }, lock: "You need enough cash for a down payment.", addFlags: ["homeOwner"] },
           { label: "Keep renting and invest cash", desc: "Flexibility over ownership identity.", chance: 0.84, effects: { bank: -1500, assets: 12000, housing: -2, power: 2 }, fail: { assets: 3000, housing: -4, stress: 3 } },
           { label: "Fight for tenant protections", desc: "Collective defense route.", chance: 0.76, effects: { housing: 8, social: 10, power: 7 }, fail: { housing: 1, social: 4, stress: 5 }, envReq: { housing: 1 }, lock: "Your housing model is too speculative for fast policy wins." },
           { label: "Move to a cheaper edge city", desc: "A map change with tradeoffs.", chance: 0.88, effects: { bank: 2000, housing: 5, social: -5, happiness: -2 }, fail: { bank: 900, housing: 2, social: -7 } }
         ]
       },
       {
-        age: 35,
-        stage: "Adult",
-        location: "cityhall",
+        age: 35, stage: "Adult", location: "cityhall",
         title: "The Protest Season",
         text: "A policy crisis hits your city. Streets fill. Cameras roll. Everyone wants neutrality from people whose lives are not neutral.",
         npc: "Amina the journalist asks: 'When rules shape your life, is silence still apolitical?'",
@@ -1110,9 +1076,7 @@ index.html
         ]
       },
       {
-        age: 39,
-        stage: "Adult",
-        location: "market",
+        age: 39, stage: "Adult", location: "market",
         title: "The Founder Window",
         text: "You spot a business gap. It might be a real company, a lifestyle hustle, or a flaming crater for your savings.",
         npc: "Kiko says: 'This is either your origin story or the funniest mistake of your thirties.'",
@@ -1124,9 +1088,7 @@ index.html
         ]
       },
       {
-        age: 43,
-        stage: "Midlife",
-        location: "home",
+        age: 43, stage: "Midlife", location: "home",
         title: "Caregiving Squeeze",
         text: "A parent needs long-term support. A child or younger relative needs time, money, or both. Midlife arrives carrying invoices.",
         npc: "Your family group chat has become a crisis-management app.",
@@ -1138,9 +1100,7 @@ index.html
         ]
       },
       {
-        age: 47,
-        stage: "Midlife",
-        location: "office",
+        age: 47, stage: "Midlife", location: "office",
         title: "Automation Notice",
         text: "An internal memo says AI and software are 'enhancing efficiency.' Translation: somebody's role is about to disappear.",
         npc: "Boss Elena says: 'Adaptation is opportunity.' Nobody in the room finds that comforting.",
@@ -1152,12 +1112,10 @@ index.html
         ]
       },
       {
-        age: 51,
-        stage: "Midlife",
-        location: "park",
+        age: 51, stage: "Midlife", location: "park",
         title: "Climate Shock",
         text: "A flood or heat wave hits your district. Infrastructure matters. Insurance matters. So does whether your city treated resilience as a real budget item.",
-        npc: "Amina reports from the street: 'Disasters reveal who got a buffer and who got a press release.'",
+        npc: "Amina reports: 'Disasters reveal who got a buffer and who got a press release.'",
         options: [
           { label: "Evacuate and protect the family", desc: "Costly, sane, urgent.", chance: 0.87, effects: { bank: -1800, health: 5, stress: 4, housing: 2 }, fail: { bank: -2800, health: -3, stress: 8 } },
           { label: "Use public emergency support", desc: "Only as good as the system you built.", chance: 0.83, effects: { bank: -500, health: 6, housing: 6, stress: -3 }, fail: { bank: -1500, stress: 7, housing: -4 }, envReq: { welfare: 2 }, lock: "Your public support system is too thin for a clean recovery." },
@@ -1166,9 +1124,7 @@ index.html
         ]
       },
       {
-        age: 56,
-        stage: "Later Career",
-        location: "office",
+        age: 56, stage: "Later Career", location: "office",
         title: "Second-Career Signal",
         text: "You are experienced enough to teach, lead, consult, or burn out in perfect silence. The next move shapes the entire late game.",
         npc: "Director Vale messages: 'Experience compounds too. Decide where to spend it.'",
@@ -1180,9 +1136,7 @@ index.html
         ]
       },
       {
-        age: 61,
-        stage: "Later Career",
-        location: "cityhall",
+        age: 61, stage: "Later Career", location: "cityhall",
         title: "Legacy Vote",
         text: "You are asked to join a civic board shaping future budgets. You can push fairness, protect your class, fund prestige projects, or step away.",
         npc: "Amina: 'Now you are close enough to the levers to stop pretending systems are abstract.'",
@@ -1194,12 +1148,10 @@ index.html
         ]
       },
       {
-        age: 67,
-        stage: "Retirement",
-        location: "park",
+        age: 67, stage: "Retirement", location: "park",
         title: "Retirement Setup",
         text: "The scoreboard comes due. You can retire comfortably, work part-time, rely on public systems, or improvise.",
-        npc: "Your future self finally asks the oldest question in the game: 'Did the structure catch you, or did you outrun it?'",
+        npc: "Your future self finally asks: 'Did the structure catch you, or did you outrun it?'",
         options: [
           { label: "Retire on savings and assets", desc: "This is the clean win path if you built it.", chance: 0.82, effects: { happiness: 10, stress: -10, power: 3 }, fail: { happiness: 5, stress: -4 }, statReq: { assets: 30000 }, lock: "You need stronger assets for a comfortable retirement." },
           { label: "Rely on public pension and services", desc: "Works best in generous states.", chance: 0.84, effects: { happiness: 6, stress: -8, bank: 1400 }, fail: { happiness: 2, stress: -2, bank: 400 }, envReq: { welfare: 2 }, lock: "Your welfare floor is too weak for this to feel safe." },
@@ -1208,9 +1160,7 @@ index.html
         ]
       },
       {
-        age: 74,
-        stage: "Retirement",
-        location: "home",
+        age: 74, stage: "Retirement", location: "home",
         title: "The Final Accounting",
         text: "You look back. The world you designed gave you a place, a ceiling, a floor, and a thousand random rolls. Now comes the philosophical boss fight: would you choose that same world without knowing you would be you?",
         npc: "Rawls appears in spirit: 'Justice begins where your self-interest loses the script.'",
@@ -1223,48 +1173,40 @@ index.html
       }
     ];
 
+    /* ============================
+       STATE
+    ============================ */
     const state = createInitialState();
-    const app = document.getElementById("app");
+    const app   = document.getElementById("app");
 
     function createInitialState() {
       return {
         scene: "title",
         env: { tax: 4, education: 2, healthcare: 2, welfare: 1, housing: 2, labor: 2, policing: 2 },
-        player: null,
-        stats: null,
-        flags: {},
-        eventIndex: 0,
-        history: [],
-        lastResult: null,
-        fairness: null,
-        spawn: null,
-        ending: null
+        player: null, stats: null, flags: {},
+        eventIndex: 0, history: [], lastResult: null,
+        fairness: null, spawn: null, ending: null
       };
     }
 
     function resetGame() {
       const fresh = createInitialState();
-      Object.keys(state).forEach((key) => delete state[key]);
+      Object.keys(state).forEach(k => delete state[k]);
       Object.assign(state, fresh);
       render();
     }
 
-    function clamp(value, min, max) {
-      return Math.max(min, Math.min(max, value));
-    }
+    /* ============================
+       HELPERS
+    ============================ */
+    function clamp(v, mn, mx) { return Math.max(mn, Math.min(mx, v)); }
 
     function money(n) {
       return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Math.round(n));
     }
 
-    function scorePercent(value, max) {
-      return clamp((value / max) * 100, 0, 100);
-    }
-
-    function metricValue(key, value) {
-      const meta = METRICS[key];
-      return meta.kind === "money" ? money(value) : Math.round(value);
-    }
+    function scorePercent(v, mx) { return clamp((v / mx) * 100, 0, 100); }
+    function metricValue(key, v) { return METRICS[key].kind === "money" ? money(v) : Math.round(v); }
 
     function bandFromPercentile(p) {
       if (p >= 95) return "Top 5%";
@@ -1276,127 +1218,91 @@ index.html
     }
 
     function computeSociety(env) {
-      const fairness = clamp(28 + env.tax * 5 + env.welfare * 10 + (4 - env.housing) * 6 + env.education * 7 + env.healthcare * 6 + env.labor * 5 - env.policing * 2, 0, 100);
-      const opportunity = clamp(22 + env.education * 11 + env.healthcare * 5 + env.labor * 6 + (4 - env.housing) * 3 + (9 - env.tax) * 2, 0, 100);
-      const safety = clamp(18 + env.healthcare * 11 + env.welfare * 12 + (4 - env.housing) * 4 + env.policing * 8, 0, 100);
-      const volatility = clamp(64 + env.housing * 8 + (9 - env.tax) * 3 - env.welfare * 10 - env.healthcare * 5 - env.labor * 5, 0, 100);
-      const assetAccess = clamp(20 + env.housing * 12 + (9 - env.tax) * 4 - env.welfare * 4 + env.labor * 2, 0, 100);
-      const overall = Math.round((fairness + opportunity + safety + (100 - volatility) + assetAccess) / 5);
+      const fairness    = clamp(28 + env.tax*5 + env.welfare*10 + (4-env.housing)*6 + env.education*7 + env.healthcare*6 + env.labor*5 - env.policing*2, 0, 100);
+      const opportunity = clamp(22 + env.education*11 + env.healthcare*5 + env.labor*6 + (4-env.housing)*3 + (9-env.tax)*2, 0, 100);
+      const safety      = clamp(18 + env.healthcare*11 + env.welfare*12 + (4-env.housing)*4 + env.policing*8, 0, 100);
+      const volatility  = clamp(64 + env.housing*8 + (9-env.tax)*3 - env.welfare*10 - env.healthcare*5 - env.labor*5, 0, 100);
+      const assetAccess = clamp(20 + env.housing*12 + (9-env.tax)*4 - env.welfare*4 + env.labor*2, 0, 100);
+      const overall     = Math.round((fairness + opportunity + safety + (100 - volatility) + assetAccess) / 5);
       return { fairness, opportunity, safety, volatility, assetAccess, overall };
     }
 
-    function randomFrom(list) {
-      return list[Math.floor(Math.random() * list.length)];
-    }
+    function randomFrom(list) { return list[Math.floor(Math.random() * list.length)]; }
 
     function spawnPlayer() {
-      const society = computeSociety(state.env);
-      const city = randomFrom(CITIES);
-      const first = randomFrom(FIRST_NAMES);
-      const last = randomFrom(LAST_NAMES);
-      const roll = Math.random() * 100;
-      const birthPercentile = clamp(Math.round(roll + state.env.housing * 6 + (9 - state.env.tax) * 2 - state.env.welfare * 6 - state.env.education * 3 - state.env.healthcare * 2), 1, 99);
-      const band = bandFromPercentile(birthPercentile);
-      const baseBank = birthPercentile > 90 ? 12000 : birthPercentile > 70 ? 4500 : birthPercentile > 45 ? 900 : 150;
-      const baseAssets = birthPercentile > 88 ? 18000 : birthPercentile > 65 ? 2500 : 0;
-      const housing = clamp(30 + (4 - state.env.housing) * 8 + birthPercentile * 0.18 - state.env.housing * (birthPercentile < 40 ? 4 : 0), 0, 100);
-      const stats = {
-        bank: Math.round(baseBank + state.env.welfare * 240 - state.env.housing * 100),
-        health: clamp(38 + state.env.healthcare * 11 + state.env.welfare * 6 + Math.random() * 12 - (100 - birthPercentile) * 0.08, 0, 100),
-        education: clamp(16 + state.env.education * 14 + birthPercentile * 0.24 + Math.random() * 6, 0, 100),
-        happiness: clamp(44 + state.env.welfare * 5 + (4 - state.env.housing) * 2 + Math.random() * 10, 0, 100),
-        housing,
-        assets: Math.round(baseAssets),
-        debt: 0,
-        social: clamp(26 + state.env.welfare * 4 + Math.random() * 20, 0, 100),
-        stress: clamp(32 + state.env.policing * 4 + state.env.housing * 4 - state.env.healthcare * 4 - state.env.welfare * 6 + (50 - birthPercentile) * 0.18, 0, 100),
-        power: clamp(8 + birthPercentile * 0.42 + state.env.education * 3 + state.env.labor * 2 - state.env.policing, 0, 100)
-      };
+      const society        = computeSociety(state.env);
+      const city           = randomFrom(CITIES);
+      const first          = randomFrom(FIRST_NAMES);
+      const last           = randomFrom(LAST_NAMES);
+      const roll           = Math.random() * 100;
+      const birthPercentile = clamp(Math.round(roll + state.env.housing*6 + (9-state.env.tax)*2 - state.env.welfare*6 - state.env.education*3 - state.env.healthcare*2), 1, 99);
+      const band           = bandFromPercentile(birthPercentile);
+      const baseBank       = birthPercentile > 90 ? 12000 : birthPercentile > 70 ? 4500 : birthPercentile > 45 ? 900 : 150;
+      const baseAssets     = birthPercentile > 88 ? 18000 : birthPercentile > 65 ? 2500 : 0;
+      const housing        = clamp(30 + (4-state.env.housing)*8 + birthPercentile*0.18 - state.env.housing*(birthPercentile < 40 ? 4 : 0), 0, 100);
 
       state.player = {
         name: first + " " + last,
         place: city.place,
         country: city.country,
-        percentile: birthPercentile,
-        band,
+        percentile: birthPercentile, band,
         archetype: birthPercentile > 85 ? "born near the top of the map" : birthPercentile > 50 ? "born into the unstable middle" : "born close to the floor"
       };
-      state.stats = stats;
-      state.fairness = society;
-      state.spawn = {
-        headline: state.player.name + " spawns in " + city.place + ", " + city.country,
-        subhead: "You built the rules first. Only now do you learn where you landed."
+      state.stats = {
+        bank:      Math.round(baseBank + state.env.welfare*240 - state.env.housing*100),
+        health:    clamp(38 + state.env.healthcare*11 + state.env.welfare*6 + Math.random()*12 - (100-birthPercentile)*0.08, 0, 100),
+        education: clamp(16 + state.env.education*14 + birthPercentile*0.24 + Math.random()*6, 0, 100),
+        happiness: clamp(44 + state.env.welfare*5 + (4-state.env.housing)*2 + Math.random()*10, 0, 100),
+        housing,
+        assets:    Math.round(baseAssets),
+        debt:      0,
+        social:    clamp(26 + state.env.welfare*4 + Math.random()*20, 0, 100),
+        stress:    clamp(32 + state.env.policing*4 + state.env.housing*4 - state.env.healthcare*4 - state.env.welfare*6 + (50-birthPercentile)*0.18, 0, 100),
+        power:     clamp(8 + birthPercentile*0.42 + state.env.education*3 + state.env.labor*2 - state.env.policing, 0, 100)
       };
-      state.flags = {};
+      state.fairness = society;
+      state.spawn    = { headline: state.player.name + " spawns in " + city.place + ", " + city.country, subhead: "You built the rules first. Only now do you learn where you landed." };
+      state.flags    = {};
       state.eventIndex = 0;
-      state.history = [
-        {
-          age: 0,
-          title: "Birth Reveal",
-          text: state.player.name + " enters the world in " + city.place + ", " + city.country + ". The system places you in the " + band + "."
-        }
-      ];
+      state.history  = [{ age: 0, title: "Birth Reveal", text: state.player.name + " enters the world in " + city.place + ", " + city.country + ". The system places you in the " + band + "." }];
       state.lastResult = null;
-      state.ending = null;
+      state.ending   = null;
     }
 
-    function currentEvent() {
-      return EVENTS[state.eventIndex];
-    }
+    function currentEvent() { return EVENTS[state.eventIndex]; }
 
     function optionLocked(option) {
-      if (option.envReq) {
-        const [key, min] = Object.entries(option.envReq)[0];
-        if (state.env[key] < min) return option.lock || "Environment requirement not met.";
-      }
-      if (option.forbidEnv) {
-        const [key, maxSafe] = Object.entries(option.forbidEnv)[0];
-        if (state.env[key] >= maxSafe) return option.lock || "Environment blocks this choice.";
-      }
-      if (option.statReq) {
-        const [key, min] = Object.entries(option.statReq)[0];
-        if (state.stats[key] < min) return option.lock || "Your stats are too low.";
-      }
-      if (option.flagsReq) {
-        const missing = option.flagsReq.find((flag) => !state.flags[flag]);
-        if (missing) return option.lock || "This route was not unlocked earlier.";
-      }
-      if (option.forbidFlags) {
-        const blocked = option.forbidFlags.find((flag) => state.flags[flag]);
-        if (blocked) return option.lock || "A past choice blocks this option.";
-      }
+      if (option.envReq) { const [k, mn] = Object.entries(option.envReq)[0]; if (state.env[k] < mn) return option.lock || "Environment requirement not met."; }
+      if (option.forbidEnv) { const [k, mx] = Object.entries(option.forbidEnv)[0]; if (state.env[k] >= mx) return option.lock || "Environment blocks this."; }
+      if (option.statReq) { const [k, mn] = Object.entries(option.statReq)[0]; if (state.stats[k] < mn) return option.lock || "Stats too low."; }
+      if (option.flagsReq) { const miss = option.flagsReq.find(f => !state.flags[f]); if (miss) return option.lock || "Route not unlocked."; }
+      if (option.forbidFlags) { const blk = option.forbidFlags.find(f => state.flags[f]); if (blk) return option.lock || "Past choice blocks this."; }
       return null;
     }
 
-    function adjustedChance(baseChance) {
+    function adjustedChance(base) {
       const s = state.stats;
-      const bonus = (s.education - 50) / 250 + (s.social - 50) / 280 + (s.power - 40) / 320 + Math.max(0, s.bank) / 70000 + state.fairness.opportunity / 500 - s.stress / 500 - s.debt / 90000;
-      return clamp(baseChance + bonus, 0.15, 0.97);
+      const bonus = (s.education-50)/250 + (s.social-50)/280 + (s.power-40)/320 + Math.max(0,s.bank)/70000 + state.fairness.opportunity/500 - s.stress/500 - s.debt/90000;
+      return clamp(base + bonus, 0.15, 0.97);
     }
 
     function applyEffects(effects) {
-      Object.entries(effects).forEach(([key, delta]) => {
-        if (METRICS[key].kind === "money") {
-          state.stats[key] = Math.round(state.stats[key] + delta);
-        } else {
-          state.stats[key] = clamp(state.stats[key] + delta, 0, 100);
-        }
+      Object.entries(effects).forEach(([k, d]) => {
+        if (METRICS[k].kind === "money") state.stats[k] = Math.round(state.stats[k] + d);
+        else state.stats[k] = clamp(state.stats[k] + d, 0, 100);
       });
-      state.stats.bank = Math.round(state.stats.bank);
+      state.stats.bank   = Math.round(state.stats.bank);
       state.stats.assets = Math.round(Math.max(0, state.stats.assets));
-      state.stats.debt = Math.round(Math.max(0, state.stats.debt));
+      state.stats.debt   = Math.round(Math.max(0, state.stats.debt));
     }
 
-    function applyFlags(list, value) {
-      (list || []).forEach((flag) => { state.flags[flag] = value; });
-    }
+    function applyFlags(list, val) { (list || []).forEach(f => { state.flags[f] = val; }); }
 
     function chooseOption(index) {
-      const event = currentEvent();
+      const event  = currentEvent();
       const option = event.options[index];
-      const lockedReason = optionLocked(option);
-      if (lockedReason) return;
-      const chance = adjustedChance(option.chance || 1);
+      if (optionLocked(option)) return;
+      const chance  = adjustedChance(option.chance || 1);
       const success = Math.random() < chance;
       const outcome = success ? option.effects : (option.fail || option.effects);
       applyEffects(outcome);
@@ -1404,24 +1310,19 @@ index.html
       applyFlags(option.removeFlags, false);
       if (!success && option.failAddFlags) applyFlags(option.failAddFlags, true);
 
-      state.lastResult = {
-        success,
-        chance,
-        title: option.label,
-        text: success ? "The move lands." : "The move partly fails. The world pushes back."
-      };
+      if (success) { SFX.success(); showFlash(true); }
+      else         { SFX.fail();    showFlash(false); }
 
-      state.history.unshift({
-        age: event.age,
-        title: event.title,
-        text: (success ? "Success: " : "Setback: ") + option.label + ". " + option.desc
-      });
+      showToast(success, option.label);
+
+      state.lastResult = { success, chance, title: option.label, text: success ? "The move lands." : "The move partly fails." };
+      state.history.unshift({ age: event.age, title: event.title, text: (success ? "Success: " : "Setback: ") + option.label + ". " + option.desc });
       state.history = state.history.slice(0, 8);
-
       state.eventIndex += 1;
+
       if (state.eventIndex >= EVENTS.length) {
         state.ending = getEnding();
-        state.scene = "ending";
+        state.scene  = "ending";
       }
       render();
     }
@@ -1429,44 +1330,27 @@ index.html
     function getEnding() {
       const s = state.stats;
       const society = state.fairness;
-      const wealth = s.bank + s.assets - s.debt;
+      const wealth  = s.bank + s.assets - s.debt;
       let title = "Stable Citizen Ending";
-      let text = "You built a life with enough floor to stay standing and enough agency to matter. Not glamorous. Not broken. Real.";
+      let text  = "You built a life with enough floor to stay standing and enough agency to matter. Not glamorous. Not broken. Real.";
 
-      if (wealth > 160000 && s.power > 65) {
-        title = "Elite Architect Ending";
-        text = "You ended wealthy and influential. The question is whether your society worked because it was just, or because it worked for people like you.";
-      } else if (wealth < -5000 && s.stress > 60) {
-        title = "Debt Spiral Ending";
-        text = "Small bad rolls, expensive systems, and thin buffers stacked into a life of constant recovery. This is exactly the outcome Rawls wants you to imagine before choosing institutions.";
-      } else if (s.social > 72 && s.happiness > 60 && wealth < 90000) {
-        title = "Community Builder Ending";
-        text = "You may not have maximized money, but you built relationships, civic weight, and a life that mattered to other people.";
-      } else if (s.health < 30) {
-        title = "Burnout Survivor Ending";
-        text = "You extracted a lot from yourself and the system extracted even more. You reached the ending, but not untouched.";
-      } else if (s.assets > 70000 && state.flags.homeOwner) {
-        title = "Property Ladder Ending";
-        text = "You climbed through ownership. The system made assets a power-up, but mostly for players who could buy early.";
-      } else if (society.fairness > 72 && s.happiness > 58) {
-        title = "Fair Society Win";
-        text = "Your world distributed risk decently, and your life showed it. You still faced randomness, but the floor held.";
-      }
+      if (wealth > 160000 && s.power > 65)                      { title = "Elite Architect Ending"; text = "You ended wealthy and influential. The question is whether your society worked because it was just, or because it worked for people like you."; }
+      else if (wealth < -5000 && s.stress > 60)                 { title = "Debt Spiral Ending"; text = "Small bad rolls, expensive systems, and thin buffers stacked into a life of constant recovery. This is exactly the outcome Rawls wants you to imagine before choosing institutions."; }
+      else if (s.social > 72 && s.happiness > 60 && wealth < 90000) { title = "Community Builder Ending"; text = "You may not have maximized money, but you built relationships, civic weight, and a life that mattered to other people."; }
+      else if (s.health < 30)                                    { title = "Burnout Survivor Ending"; text = "You extracted a lot from yourself and the system extracted even more."; }
+      else if (s.assets > 70000 && state.flags.homeOwner)        { title = "Property Ladder Ending"; text = "You climbed through ownership. The system made assets a power-up, but mostly for players who could buy early."; }
+      else if (society.fairness > 72 && s.happiness > 58)        { title = "Fair Society Win"; text = "Your world distributed risk decently, and your life showed it. You still faced randomness, but the floor held."; }
 
       const rawlsVerdict = society.fairness >= 65 && society.safety >= 60
-        ? "A Rawlsian would likely say your society gave the least advantaged a fighting chance."
-        : "A Rawlsian would likely ask why the least advantaged had to absorb this much risk.";
+        ? "A Rawlsian would say your society gave the least advantaged a fighting chance."
+        : "A Rawlsian would ask why the least advantaged had to absorb this much risk.";
 
-      return {
-        title,
-        text,
-        wealth,
-        rawlsVerdict,
-        reroll: state.player.band,
-        societyScore: society.overall
-      };
+      return { title, text, wealth, rawlsVerdict, reroll: state.player.band, societyScore: society.overall };
     }
 
+    /* ============================
+       TEMPLATES
+    ============================ */
     function metricTemplate(key, value) {
       const meta = METRICS[key];
       const fill = meta.kind === "money" ? scorePercent(Math.max(0, value), meta.max) : scorePercent(value, meta.max);
@@ -1474,34 +1358,31 @@ index.html
         <div class="metric">
           <div class="metric-head"><span>${meta.icon} ${meta.label}</span><strong>${metricValue(key, value)}</strong></div>
           <div class="bar-shell"><div class="bar-fill" style="width:${fill}%"></div></div>
-        </div>
-      `;
+        </div>`;
     }
 
     function impactTemplate(effects) {
       return Object.entries(effects || {}).map(([key, delta]) => {
-        const positive = delta >= 0;
-        const sign = positive ? "+" : "";
-        const label = METRICS[key].label;
-        const val = METRICS[key].kind === "money" ? sign + money(delta) : sign + delta;
-        return `<span class="impact ${positive ? "up" : "down"}">${label} ${val}</span>`;
+        const pos  = delta >= 0;
+        const sign = pos ? "+" : "";
+        const val  = METRICS[key].kind === "money" ? sign + money(delta) : sign + delta;
+        return `<span class="impact ${pos ? "up" : "down"}">${METRICS[key].label} ${val}</span>`;
       }).join("");
     }
 
     function optionTemplate(option, idx) {
-      const lockedReason = optionLocked(option);
+      const locked = optionLocked(option);
       const chance = Math.round(adjustedChance(option.chance || 1) * 100);
       return `
-        <button class="option ${lockedReason ? "locked" : ""}" data-action="choose" data-index="${idx}">
+        <button class="option ${locked ? "locked" : ""}" data-action="choose" data-index="${idx}">
           <div class="option-top">
             <div class="option-title">${option.label}</div>
-            <div class="chance">${chance}% est.</div>
+            <div class="chance">${chance}%</div>
           </div>
-          <div class="muted" style="font-size:13px; line-height:1.45;">${option.desc}</div>
+          <div class="option-desc">${option.desc}</div>
           <div class="impact-row">${impactTemplate(option.effects)}</div>
-          ${lockedReason ? `<div class="lock-note">🔒 <span>${lockedReason}</span></div>` : ""}
-        </button>
-      `;
+          ${locked ? `<div class="lock-note">&#x1F512; <span>${locked}</span></div>` : ""}
+        </button>`;
     }
 
     function heroPixels() {
@@ -1518,9 +1399,8 @@ index.html
       const cells = [];
       for (let y = 1; y <= 7; y++) {
         for (let x = 0; x <= 5; x++) {
-          const entry = grid.find((item) => item.startsWith(x + "," + y + ","));
-          const klass = entry ? entry.split(",")[2] : "";
-          cells.push(`<span class="px ${klass}"></span>`);
+          const entry = grid.find(i => i.startsWith(x + "," + y + ","));
+          cells.push(`<span class="px ${entry ? entry.split(",")[2] : ""}"></span>`);
         }
       }
       return `<div class="pixel">${cells.join("")}</div>`;
@@ -1529,75 +1409,16 @@ index.html
     function mapTemplate(locationKey) {
       return `
         <div class="map">
-          <div class="road road-h" style="left:10%; top:40%; width:76%;"></div>
-          <div class="road road-h" style="left:14%; top:65%; width:64%;"></div>
-          <div class="road road-v" style="left:29%; top:19%; height:58%;"></div>
-          <div class="road road-v" style="left:54%; top:24%; height:55%;"></div>
+          <div class="road road-h" style="left:10%;top:40%;width:76%;"></div>
+          <div class="road road-h" style="left:14%;top:65%;width:64%;"></div>
+          <div class="road road-v" style="left:29%;top:19%;height:58%;"></div>
+          <div class="road road-v" style="left:54%;top:24%;height:55%;"></div>
           ${Object.entries(LANDMARKS).map(([key, item]) => `
-            <div class="building ${key === locationKey ? "active" : ""}" style="left:${item.x}%; top:${item.y}%">
-              <strong>${item.icon}</strong>
-              ${item.label}
-            </div>
-          `).join("")}
-          <div class="hero" style="left:${LANDMARKS[locationKey].x}%; top:calc(${LANDMARKS[locationKey].y}% - 10px)">${heroPixels()}</div>
-        </div>
-      `;
-    }
-
-    function renderTitle() {
-      const society = computeSociety(state.env);
-      return `
-        <div class="shell">
-          <div class="screen">
-            <div class="title-screen">
-              <div class="hero-panel card glass">
-                <div style="position:relative; z-index:1; display:flex; flex-direction:column; gap:16px;">
-                  <div class="eyebrow">Public Philosophy RPG • Rawls Mode</div>
-                  <h1>The Veil of Ignorance Simulator</h1>
-                  <p class="lead">Build a society first. Then the game drops you into that same society without telling you who you will be in it. Your job is not just to win. Your job is to find out whether the rules are fair when you do not control your spawn point.</p>
-                  <div class="pill-row">
-                    <span class="pill">🎮 Configure the world</span>
-                    <span class="pill">🧍 Spawn into a random life</span>
-                    <span class="pill">🧠 Make 20 story decisions</span>
-                    <span class="pill">⚖️ End with a Rawls reflection</span>
-                  </div>
-                  <div class="title-actions">
-                    <button class="btn btn-primary" data-action="goto-builder">Start Game</button>
-                    <button class="btn btn-secondary" data-action="quick-random">Quick Random World</button>
-                  </div>
-                </div>
-                <div class="title-bottom">
-                  <div class="mini-card">
-                    <div class="muted" style="font-size:12px; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">What this project is</div>
-                    <div style="font-size:14px; line-height:1.5; color:#e7efff;">An interactive public-philosophy game based on Rawls. It turns theory into a social RPG with visible tradeoffs, luck, constraints, and consequences.</div>
-                  </div>
-                  <div class="mini-card">
-                    <div class="muted" style="font-size:12px; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">Win condition</div>
-                    <div style="font-size:14px; line-height:1.5; color:#e7efff;">Design a world you would still accept if the game spawned you anywhere in it, including the bottom of the ladder.</div>
-                  </div>
-                </div>
-              </div>
-              <div class="preview-panel card glass">
-                <div class="score-box">
-                  <div class="muted" style="font-size:12px; text-transform:uppercase; letter-spacing:0.08em;">Current default world score</div>
-                  <div class="big-score">${society.overall}</div>
-                  <div class="muted">A preview of the kind of world you are about to tune.</div>
-                </div>
-                <div class="title-metrics">
-                  ${renderPreviewBars(society)}
-                </div>
-                <div class="map-card card" style="padding:10px; min-height:286px;">
-                  <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                    <h3 style="font-size:16px;">Pixel-world preview</h3>
-                    <span class="tag">Single-screen RPG layout</span>
-                  </div>
-                  ${mapTemplate("school")}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
+            <div class="building ${key === locationKey ? "active" : ""}" style="left:${item.x}%;top:${item.y}%">
+              <strong>${item.icon}</strong>${item.label}
+            </div>`).join("")}
+          <div class="hero" style="left:${LANDMARKS[locationKey].x}%;top:calc(${LANDMARKS[locationKey].y}% - 12px)">${heroPixels()}</div>
+        </div>`;
     }
 
     function previewBar(name, value, desc) {
@@ -1606,19 +1427,18 @@ index.html
           <div class="bar-block">
             <div class="bar-label"><span>${name}</span><strong>${Math.round(value)}</strong></div>
             <div class="bar-shell"><div class="bar-fill" style="width:${value}%"></div></div>
-            <div class="muted" style="font-size:12px; line-height:1.4;">${desc}</div>
+            <div class="muted" style="font-size:10px;line-height:1.4;margin-top:2px;">${desc}</div>
           </div>
-        </div>
-      `;
+        </div>`;
     }
 
     function renderPreviewBars(society) {
       return [
-        previewBar("Fairness", society.fairness, "How hard the system punishes a bad spawn."),
+        previewBar("Fairness",    society.fairness,    "How hard the system punishes a bad spawn."),
         previewBar("Opportunity", society.opportunity, "How many ladders actually exist."),
-        previewBar("Safety Net", society.safety, "How much the floor catches you."),
-        previewBar("Volatility", society.volatility, "How swingy life becomes."),
-        previewBar("Asset Access", society.assetAccess, "How possible it is to buy into upside." )
+        previewBar("Safety Net",  society.safety,      "How much the floor catches you."),
+        previewBar("Volatility",  society.volatility,  "How swingy life becomes."),
+        previewBar("Asset Access",society.assetAccess, "How possible it is to buy into upside.")
       ].join("");
     }
 
@@ -1631,12 +1451,66 @@ index.html
           </div>
           <div class="config-desc">${levels[value].desc}</div>
           <div class="option-row">
-            ${levels.map((level, idx) => `
-              <button class="toggle ${idx === value ? "active" : ""}" data-action="set-env" data-key="${key}" data-value="${idx}">${key === "tax" ? idx * 10 + "%" : idx + 1}</button>
-            `).join("")}
+            ${levels.map((_, idx) => `
+              <button class="toggle ${idx === value ? "active" : ""}" data-action="set-env" data-key="${key}" data-value="${idx}">${key === "tax" ? idx*10+"%" : idx+1}</button>`).join("")}
           </div>
-        </div>
-      `;
+        </div>`;
+    }
+
+    /* ============================
+       SCREENS
+    ============================ */
+    function renderTitle() {
+      const society = computeSociety(state.env);
+      return `
+        <div class="shell">
+          <div class="screen">
+            <div class="title-screen">
+              <div class="hero-panel card glass">
+                <div class="hero-top">
+                  <div class="eyebrow">Public Philosophy RPG &bull; Rawls Mode</div>
+                  <div class="game-title">Veil of<br>Ignorance<span class="sub">Philosophy Simulator</span></div>
+                  <p class="lead">Build a society first. Then the game drops you into it without telling you who you will be. Your job is not just to win — it is to find out whether the rules are fair when you do not control your spawn point.</p>
+                  <div class="pill-row">
+                    <span class="pill">&#x2699; Configure the world</span>
+                    <span class="pill">&#x1F3B2; Spawn randomly</span>
+                    <span class="pill">&#x1F9E0; 20 story decisions</span>
+                    <span class="pill">&#x2696; Rawls reflection</span>
+                  </div>
+                  <div class="title-actions">
+                    <button class="btn btn-primary" data-action="goto-builder">&#x25B6; Start Game</button>
+                    <button class="btn btn-secondary" data-action="quick-random">&#x1F3B2; Random World</button>
+                  </div>
+                </div>
+                <div class="title-bottom">
+                  <div class="mini-card">
+                    <div class="mini-card-label">What this is</div>
+                    <div style="font-size:12px;line-height:1.55;color:#c8ddf0;">An interactive philosophy game based on Rawls. It turns social contract theory into an RPG with visible tradeoffs, luck, and consequences.</div>
+                  </div>
+                  <div class="mini-card">
+                    <div class="mini-card-label">Win condition</div>
+                    <div style="font-size:12px;line-height:1.55;color:#c8ddf0;">Design a world you would still accept if the game spawned you anywhere in it — including the bottom of the ladder.</div>
+                  </div>
+                </div>
+              </div>
+              <div class="preview-panel card glass">
+                <div class="score-box">
+                  <div class="score-label">Default world score</div>
+                  <div class="big-score">${society.overall}</div>
+                  <div class="muted" style="font-size:11px;">A preview of the world you are about to tune.</div>
+                </div>
+                <div class="title-metrics">${renderPreviewBars(society)}</div>
+                <div class="map-card card">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                    <h3>World preview</h3>
+                    <span class="tag">Single-screen RPG</span>
+                  </div>
+                  ${mapTemplate("school")}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>`;
     }
 
     function renderBuilder() {
@@ -1649,63 +1523,58 @@ index.html
                 <div class="builder-header card glass">
                   <div>
                     <div class="eyebrow">World Builder</div>
-                    <h2>Design the ecosystem before you know your spawn</h2>
-                    <p class="subtle-note" style="margin-top:8px;">Your player has no control over where they will be born. Lock the constitution first, then the game reveals your life. Higher taxes means taxes are increasing. Lower taxes means you are reducing them. The same logic applies to the rest of the sliders.</p>
+                    <h2 style="margin-top:6px;">Design the ecosystem before you know your spawn</h2>
+                    <p class="subtle-note">Lock the constitution first — then the game reveals your life. Higher values mean more of that system.</p>
                   </div>
-                  <div class="pill-row" style="justify-content:flex-end;">
-                    <span class="pill">Tax has 10 levels</span>
-                    <span class="pill">Education 5</span>
-                    <span class="pill">Healthcare 5</span>
-                    <span class="pill">Welfare 4</span>
-                    <span class="pill">Housing 5</span>
+                  <div class="pill-row" style="justify-content:flex-end;align-self:flex-start;">
+                    <span class="pill">Tax: 10 levels</span>
+                    <span class="pill">Others: 5 levels</span>
                   </div>
                 </div>
                 <div class="world-grid">
-                  ${configCard("tax", "Tax Rate", TAX_LEVELS, state.env.tax)}
-                  ${configCard("education", "Education", EDUCATION_LEVELS, state.env.education)}
-                  ${configCard("healthcare", "Healthcare", HEALTHCARE_LEVELS, state.env.healthcare)}
-                  ${configCard("welfare", "Welfare", WELFARE_LEVELS, state.env.welfare)}
-                  ${configCard("housing", "Housing", HOUSING_LEVELS, state.env.housing)}
-                  ${configCard("labor", "Labor Rules", LABOR_LEVELS, state.env.labor)}
-                  ${configCard("policing", "Policing / Surveillance", POLICING_LEVELS, state.env.policing)}
+                  ${configCard("tax",      "Tax Rate",              TAX_LEVELS,      state.env.tax)}
+                  ${configCard("education","Education",             EDUCATION_LEVELS, state.env.education)}
+                  ${configCard("healthcare","Healthcare",           HEALTHCARE_LEVELS,state.env.healthcare)}
+                  ${configCard("welfare",  "Welfare",              WELFARE_LEVELS,   state.env.welfare)}
+                  ${configCard("housing",  "Housing",              HOUSING_LEVELS,   state.env.housing)}
+                  ${configCard("labor",    "Labor Rules",          LABOR_LEVELS,     state.env.labor)}
+                  ${configCard("policing", "Policing",             POLICING_LEVELS,  state.env.policing)}
                 </div>
               </div>
               <div class="builder-right">
                 <div class="preview-stack card glass">
-                  <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
                     <div>
-                      <h3 style="font-size:22px;">Society score</h3>
-                      <div class="muted" style="font-size:13px;">You can see the world you are creating before the roulette wheel spins.</div>
+                      <h3>Society score</h3>
+                      <div class="muted" style="font-size:11px;margin-top:2px;">Live preview of the world you are creating.</div>
                     </div>
-                    <div class="big-score" style="font-size:34px;">${society.overall}</div>
+                    <div class="big-score" style="font-size:32px;">${society.overall}</div>
                   </div>
                   ${renderPreviewBars(society)}
                 </div>
                 <div class="map-card card glass">
-                  <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                    <h3 style="font-size:18px;">Live map preview</h3>
-                    <span class="tag">Your avatar appears after the world lock</span>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                    <h3>Live map preview</h3>
+                    <span class="tag">Avatar appears after lock</span>
                   </div>
                   ${mapTemplate("cityhall")}
                 </div>
                 <div class="score-box">
-                  <div class="muted" style="font-size:12px; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px;">Build readout</div>
+                  <div class="score-label" style="margin-bottom:6px;">Build readout</div>
                   <div class="tag-row">
                     <span class="tag">Floor: ${society.safety >= 65 ? "Strong" : society.safety >= 40 ? "Medium" : "Weak"}</span>
                     <span class="tag">Mobility: ${society.opportunity >= 65 ? "High" : society.opportunity >= 40 ? "Mixed" : "Low"}</span>
                     <span class="tag">Chaos: ${society.volatility >= 65 ? "High" : society.volatility >= 40 ? "Medium" : "Low"}</span>
-                    <span class="tag">Asset game: ${society.assetAccess >= 65 ? "Open" : society.assetAccess >= 40 ? "Partial" : "Hard"}</span>
                   </div>
                 </div>
                 <div class="footer-actions">
-                  <button class="btn btn-secondary" data-action="back-title">Back</button>
-                  <button class="btn btn-primary" data-action="lock-world">Lock the Constitution</button>
+                  <button class="btn btn-secondary" data-action="back-title">&#x2190; Back</button>
+                  <button class="btn btn-primary" data-action="lock-world">&#x1F512; Lock the Constitution</button>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      `;
+        </div>`;
     }
 
     function renderBirth() {
@@ -1716,39 +1585,38 @@ index.html
               <div class="birth-left card glass">
                 <div class="eyebrow">Spawn Reveal</div>
                 <div class="birth-name">${state.player.name}</div>
-                <div style="font-size:18px; color:#dce7ff;">Born in ${state.player.place}, ${state.player.country}</div>
-                <p class="lead" style="font-size:17px; max-width:60ch;">${state.spawn.subhead} The game places you in the <strong>${state.player.band}</strong>, ${state.player.archetype}.</p>
+                <div style="font-size:15px;color:#c0d8ee;">Born in ${state.player.place}, ${state.player.country}</div>
+                <p class="lead" style="font-size:14px;">The system places you in the <strong style="color:var(--accent);">${state.player.band}</strong> — ${state.player.archetype}.</p>
                 <div class="birth-grid">
                   <div class="info-chip"><small>Population placement</small><strong>${state.player.band}</strong></div>
-                  <div class="info-chip"><small>Birth percentile roll</small><strong>${state.player.percentile}</strong></div>
+                  <div class="info-chip"><small>Birth percentile</small><strong>${state.player.percentile}</strong></div>
                   <div class="info-chip"><small>Society score</small><strong>${state.fairness.overall}</strong></div>
-                  <div class="info-chip"><small>Rawls challenge</small><strong>Would you still pick this world?</strong></div>
+                  <div class="info-chip"><small>Core question</small><strong style="font-size:11px;">Would you still pick this world?</strong></div>
                 </div>
                 <div class="footer-actions">
-                  <button class="btn btn-secondary" data-action="back-builder">Rebuild World</button>
-                  <button class="btn btn-primary" data-action="begin-life">Live This Life</button>
+                  <button class="btn btn-secondary" data-action="back-builder">&#x21BA; Rebuild World</button>
+                  <button class="btn btn-primary" data-action="begin-life">&#x25B6; Live This Life</button>
                 </div>
               </div>
               <div class="preview-panel card glass">
-                <div class="map-card card" style="padding:10px; min-height:300px;">
-                  <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                    <h3 style="font-size:18px;">Your first map</h3>
+                <div class="map-card card" style="padding:10px;min-height:280px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                    <h3>Your first map</h3>
                     <span class="tag">${state.player.place}</span>
                   </div>
                   ${mapTemplate("home")}
                 </div>
-                <div class="metrics-grid" style="grid-template-columns:1fr 1fr;">
-                  ${Object.entries(state.stats).map(([key, value]) => metricTemplate(key, value)).join("")}
+                <div class="metrics-grid">
+                  ${Object.entries(state.stats).map(([k, v]) => metricTemplate(k, v)).join("")}
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      `;
+        </div>`;
     }
 
     function renderPlay() {
-      const event = currentEvent();
+      const event    = currentEvent();
       const progress = Math.round((state.eventIndex / EVENTS.length) * 100);
       return `
         <div class="shell">
@@ -1757,79 +1625,76 @@ index.html
               <div class="hud">
                 <div class="hud-card card glass">
                   <div>
-                    <div class="muted" style="font-size:12px; text-transform:uppercase; letter-spacing:0.08em;">Life Stage</div>
+                    <div class="hud-label">Life Stage</div>
                     <div class="hud-value">${event.stage}</div>
                   </div>
-                  <div class="pill">Age ${event.age}</div>
+                  <div class="pill" style="color:var(--gold);border-color:rgba(255,215,0,0.2);">Age ${event.age}</div>
                 </div>
                 <div class="hud-card card glass">
                   <div>
-                    <div class="muted" style="font-size:12px; text-transform:uppercase; letter-spacing:0.08em;">Progress</div>
+                    <div class="hud-label">Progress</div>
                     <div class="hud-value">${state.eventIndex + 1} / ${EVENTS.length}</div>
                   </div>
-                  <div style="width:44%;">
+                  <div style="width:40%;">
                     <div class="bar-shell"><div class="bar-fill" style="width:${progress}%"></div></div>
                   </div>
                 </div>
                 <div class="hud-card card glass">
                   <div>
-                    <div class="muted" style="font-size:12px; text-transform:uppercase; letter-spacing:0.08em;">Spawn Band</div>
-                    <div class="hud-value" style="font-size:22px;">${state.player.band}</div>
+                    <div class="hud-label">Spawn Band</div>
+                    <div class="hud-value" style="font-size:14px;">${state.player.band}</div>
                   </div>
                   <div class="pill">${state.player.place}</div>
                 </div>
               </div>
               <div class="main-grid">
                 <div class="column">
-                  <div class="panel card glass">
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                      <h3 style="font-size:18px;">World map</h3>
-                      <span class="tag">Current zone: ${LANDMARKS[event.location].label}</span>
+                  <div class="panel card glass" style="flex:1;">
+                    <div class="panel-header">
+                      <h3>World map</h3>
+                      <span class="tag">${LANDMARKS[event.location].label}</span>
                     </div>
                     ${mapTemplate(event.location)}
                   </div>
                 </div>
                 <div class="column">
                   <div class="panel card glass" style="flex:1.05;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                      <h3 style="font-size:18px;">Character sheet</h3>
+                    <div class="panel-header">
+                      <h3>Character sheet</h3>
                       <span class="tag">${state.player.name}</span>
                     </div>
-                    <div class="metrics-grid">${Object.entries(state.stats).map(([key, value]) => metricTemplate(key, value)).join("")}</div>
+                    <div class="metrics-grid">${Object.entries(state.stats).map(([k, v]) => metricTemplate(k, v)).join("")}</div>
                   </div>
                   <div class="panel card glass" style="flex:0.95;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                      <h3 style="font-size:18px;">Story log</h3>
-                      ${state.lastResult ? `<span class="tag">${state.lastResult.success ? "Last move landed" : "Last move failed"}</span>` : `<span class="tag">No move yet</span>`}
+                    <div class="panel-header">
+                      <h3>Story log</h3>
+                      ${state.lastResult ? `<span class="tag" style="color:${state.lastResult.success ? "var(--accent-2)" : "var(--danger)"};">${state.lastResult.success ? "Landed" : "Setback"}</span>` : `<span class="tag">No moves yet</span>`}
                     </div>
-                    <div class="history-list">${state.history.map(item => `<div class="history-item"><small>Age ${item.age} • ${item.title}</small>${item.text}</div>`).join("")}</div>
+                    <div class="history-list">${state.history.map(i => `<div class="history-item"><small>Age ${i.age} &bull; ${i.title}</small>${i.text}</div>`).join("")}</div>
                   </div>
                 </div>
                 <div class="column">
                   <div class="decision-card card glass">
                     <div class="decision-header">
-                      <div>
-                        <div class="stage-tag">${event.stage}</div>
-                        <h2 style="font-size:28px; margin-top:10px; letter-spacing:-0.04em;">${event.title}</h2>
-                        <p class="muted" style="font-size:14px; line-height:1.55; margin-top:8px;">${event.text}</p>
-                      </div>
+                      <div class="stage-tag">${event.stage}</div>
+                      <div class="decision-title">${event.title}</div>
+                      <div class="decision-text">${event.text}</div>
                     </div>
                     <div class="npc-box">${event.npc}</div>
                     <div class="progress-wrap">
-                      <div class="bar-label"><span>Life arc completion</span><strong>${progress}%</strong></div>
+                      <div class="bar-label"><span style="font-size:10px;color:var(--muted);">Life arc</span><strong style="font-size:10px;">${progress}%</strong></div>
                       <div class="bar-shell"><div class="bar-fill" style="width:${progress}%"></div></div>
                     </div>
                     <div class="options">
-                      ${event.options.map((option, idx) => optionTemplate(option, idx)).join("")}
+                      ${event.options.map((o, i) => optionTemplate(o, i)).join("")}
                     </div>
-                    <div class="muted" style="font-size:12px; line-height:1.5;">Every option shows visible impact. Some are locked by your society settings, earlier decisions, or your current stats. Success odds also shift with your build.</div>
+                    <div class="muted" style="font-size:10px;line-height:1.5;flex-shrink:0;">Options locked by system settings, stats, or past choices. Success odds shift with your build.</div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      `;
+        </div>`;
     }
 
     function renderEnding() {
@@ -1839,9 +1704,9 @@ index.html
           <div class="screen">
             <div class="ending-layout">
               <div class="ending-left card glass">
-                <div class="eyebrow">Endgame • Rawls Reflection</div>
+                <div class="eyebrow">Endgame &bull; Rawls Reflection</div>
                 <div class="ending-title">${end.title}</div>
-                <p class="lead" style="font-size:17px; max-width:58ch;">${end.text}</p>
+                <p class="lead" style="font-size:13px;">${end.text}</p>
                 <div class="ending-grid">
                   <div class="info-chip"><small>Final wealth</small><strong>${money(end.wealth)}</strong></div>
                   <div class="info-chip"><small>Society score</small><strong>${end.societyScore}</strong></div>
@@ -1849,93 +1714,98 @@ index.html
                   <div class="info-chip"><small>Player</small><strong>${state.player.name}</strong></div>
                 </div>
                 <div class="reflection">
-                  <strong>Rawls reflection:</strong><br /><br />
-                  ${end.rawlsVerdict}<br /><br />
-                  The whole point of the veil of ignorance is that you choose institutions before you know whether you will be rich or poor, healthy or sick, connected or isolated. Your run forced you to live inside the rules you created.
+                  <strong>Rawls reflection:</strong><br><br>
+                  ${end.rawlsVerdict}<br><br>
+                  The veil of ignorance asks you to choose institutions before knowing whether you will be rich or poor, healthy or sick. Your run forced you to live inside the rules you created.
                 </div>
                 <div class="footer-actions">
-                  <button class="btn btn-primary" data-action="restart">Play Again</button>
-                  <button class="btn btn-secondary" data-action="back-builder">Rebuild Society</button>
+                  <button class="btn btn-primary" data-action="restart">&#x21BA; Play Again</button>
+                  <button class="btn btn-secondary" data-action="back-builder">&#x2699; Rebuild Society</button>
                 </div>
               </div>
               <div class="preview-panel card glass">
-                <div class="map-card card" style="padding:10px; min-height:300px;">
-                  <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                    <h3 style="font-size:18px;">Your final map</h3>
+                <div class="map-card card" style="padding:10px;min-height:260px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                    <h3>Final map</h3>
                     <span class="tag">Full life completed</span>
                   </div>
                   ${mapTemplate("park")}
                 </div>
                 <div class="list">
-                  <div><strong>Question 1:</strong> Would you accept this exact society if the game re-randomized your birth tomorrow?</div>
-                  <div><strong>Question 2:</strong> Did the least advantaged in your world get a meaningful floor, or only survival?</div>
-                  <div><strong>Question 3:</strong> Which setting changed outcomes most: taxes, welfare, housing, education, healthcare, labor, or policing?</div>
-                  <div><strong>Question 4:</strong> Which of your late-game advantages came from merit, and which came from your initial spawn and system design?</div>
+                  <div><strong>Q1:</strong> Would you accept this society if the game re-randomized your birth tomorrow?</div>
+                  <div><strong>Q2:</strong> Did the least advantaged get a meaningful floor, or only survival?</div>
+                  <div><strong>Q3:</strong> Which setting changed outcomes most: taxes, welfare, housing, education, healthcare, labor, or policing?</div>
+                  <div><strong>Q4:</strong> Which of your late-game advantages came from merit versus initial spawn?</div>
                 </div>
-                <div class="metrics-grid" style="grid-template-columns:1fr 1fr;">${Object.entries(state.stats).map(([key, value]) => metricTemplate(key, value)).join("")}</div>
+                <div class="metrics-grid">${Object.entries(state.stats).map(([k, v]) => metricTemplate(k, v)).join("")}</div>
               </div>
             </div>
           </div>
-        </div>
-      `;
+        </div>`;
     }
 
+    /* ============================
+       RENDER
+    ============================ */
     function render() {
-      if (state.scene === "title") app.innerHTML = renderTitle();
+      if (state.scene === "title")   app.innerHTML = renderTitle();
       if (state.scene === "builder") app.innerHTML = renderBuilder();
-      if (state.scene === "birth") app.innerHTML = renderBirth();
-      if (state.scene === "play") app.innerHTML = renderPlay();
-      if (state.scene === "ending") app.innerHTML = renderEnding();
+      if (state.scene === "birth")   app.innerHTML = renderBirth();
+      if (state.scene === "play")    app.innerHTML = renderPlay();
+      if (state.scene === "ending")  app.innerHTML = renderEnding();
     }
 
-    app.addEventListener("click", (event) => {
-      const target = event.target.closest("[data-action]");
+    /* ============================
+       EVENT HANDLER
+    ============================ */
+    app.addEventListener("click", e => {
+      const target = e.target.closest("[data-action]");
       if (!target) return;
       const action = target.dataset.action;
-      if (action === "goto-builder") {
-        state.scene = "builder";
-        render();
-      }
-      if (action === "back-title") {
-        state.scene = "title";
-        render();
-      }
-      if (action === "back-builder") {
-        state.scene = "builder";
-        render();
-      }
+
+      SFX.click();
+
+      if (action === "goto-builder") { SFX.transition(); state.scene = "builder"; render(); }
+      if (action === "back-title")   { SFX.transition(); state.scene = "title";   render(); }
+      if (action === "back-builder") { SFX.transition(); state.scene = "builder"; render(); }
+
       if (action === "set-env") {
         state.env[target.dataset.key] = Number(target.dataset.value);
         render();
       }
+
       if (action === "quick-random") {
+        SFX.dice();
         state.env = {
-          tax: Math.floor(Math.random() * 10),
+          tax:       Math.floor(Math.random() * 10),
           education: Math.floor(Math.random() * 5),
-          healthcare: Math.floor(Math.random() * 5),
-          welfare: Math.floor(Math.random() * 4),
-          housing: Math.floor(Math.random() * 5),
-          labor: Math.floor(Math.random() * 5),
-          policing: Math.floor(Math.random() * 5)
+          healthcare:Math.floor(Math.random() * 5),
+          welfare:   Math.floor(Math.random() * 4),
+          housing:   Math.floor(Math.random() * 5),
+          labor:     Math.floor(Math.random() * 5),
+          policing:  Math.floor(Math.random() * 5)
         };
         state.scene = "builder";
         render();
       }
+
       if (action === "lock-world") {
+        SFX.spawn();
         spawnPlayer();
         state.scene = "birth";
         render();
       }
-      if (action === "begin-life") {
-        state.scene = "play";
-        render();
-      }
+
+      if (action === "begin-life") { SFX.transition(); state.scene = "play"; render(); }
+
       if (action === "choose") {
-        chooseOption(Number(target.dataset.index));
+        const idx    = Number(target.dataset.index);
+        const option = currentEvent().options[idx];
+        if (optionLocked(option)) { SFX.locked(); return; }
+        chooseOption(idx);
       }
-      if (action === "restart") {
-        resetGame();
-      }
+
+      if (action === "restart") { SFX.transition(); resetGame(); }
     });
 
     render();
